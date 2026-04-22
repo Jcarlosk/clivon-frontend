@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clivon Edu — Escanear</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="/assets/img/icon.svg" type="image/png">
+  <style>
+    /* ── Layout ── */
+    .scan-layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
+    @media (max-width: 900px) { .scan-layout { grid-template-columns: 1fr; } }
+
+    /* ── Viewer (câmera + overlay) ── */
+    .viewer-wrap {
+      position: relative;
+      background: #0c1220;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      aspect-ratio: 4/3;
+    }
+    .viewer-wrap canvas,
+    .viewer-wrap video,
+    .viewer-wrap img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: contain;
+    }
+    #overlayCanvas { pointer-events: none; z-index: 4; }
+    #cameraFeed   { z-index: 1; display: none; }
+    #previewImg   { z-index: 2; display: none; }
+    #debugImg     { z-index: 3; display: none; opacity: .0; transition: opacity .4s; }
+
+    .scan-placeholder {
+      position: absolute; inset: 0; z-index: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: rgba(255,255,255,.3); text-align: center; padding: 24px; gap: 12px;
+    }
+    .scan-placeholder svg { opacity: .4; }
+    .scan-placeholder p { font-size: 13px; line-height: 1.6; }
+
+    /* Cantos de enquadramento */
+    .corner { position: absolute; width: 24px; height: 24px; border-color: rgba(255,255,255,.5); border-style: solid; border-width: 0; z-index: 5; }
+    .corner.tl { top:14px; left:14px;  border-top-width:2.5px; border-left-width:2.5px;  border-radius:3px 0 0 0; }
+    .corner.tr { top:14px; right:14px; border-top-width:2.5px; border-right-width:2.5px; border-radius:0 3px 0 0; }
+    .corner.bl { bottom:14px; left:14px;  border-bottom-width:2.5px; border-left-width:2.5px;  border-radius:0 0 0 3px; }
+    .corner.br { bottom:14px; right:14px; border-bottom-width:2.5px; border-right-width:2.5px; border-radius:0 0 3px 0; }
+
+    .loading-overlay {
+      position:absolute; inset:0; background:rgba(12,18,32,.82);
+      display:none; align-items:center; justify-content:center;
+      flex-direction:column; gap:12px; color:#fff; font-size:14px; z-index:10;
+    }
+    .loading-overlay.active { display:flex; }
+
+    .status-pill {
+      position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+      background:rgba(12,18,32,.75); backdrop-filter:blur(6px);
+      color:#fff; font-size:12px; font-weight:500;
+      padding:5px 13px; border-radius:20px; z-index:6;
+      display:flex; align-items:center; gap:7px; white-space:nowrap;
+    }
+    .dot { width:7px; height:7px; border-radius:50%; background:#6b7280; }
+    .dot.ready   { background:var(--green); animation:pulse 2s infinite; }
+    .dot.scan    { background:var(--amber); animation:pulse .7s infinite; }
+    .dot.done    { background:#3b82f6; }
+    .dot.review  { background:var(--amber); animation:pulse 1.2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    /* ── Toolbar overlay ── */
+    .overlay-toolbar {
+      display:none; gap:8px; margin-top:10px; flex-wrap:wrap;
+    }
+    .overlay-toolbar.visible { display:flex; }
+    .toggle-debug {
+      background:var(--surface-3); border:1px solid var(--border); color:var(--text-2);
+      font-size:12px; padding:5px 12px; border-radius:var(--radius-sm);
+      cursor:pointer; font-family:var(--font); transition:all .15s;
+    }
+    .toggle-debug.active { background:var(--brand-light); border-color:var(--brand); color:var(--brand); }
+
+    /* ── Right panel ── */
+    .right-panel { display:flex; flex-direction:column; gap:14px; }
+
+    /* Fase badge */
+    .phase-badge {
+      display:flex; align-items:center; gap:8px;
+      background:var(--amber-bg); border:1px solid #fde68a;
+      border-radius:var(--radius-md); padding:10px 14px;
+      font-size:13px; color:#92400e; font-weight:500;
+    }
+    .phase-badge.confirm { background:var(--brand-light); border-color:#bfdbfe; color:var(--brand-dark); }
+    .phase-badge.saved   { background:var(--green-bg); border-color:#a7f3d0; color:#065f46; }
+
+    /* Desempenho */
+    .perf-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px; }
+    .perf-inner { display:flex; gap:14px; align-items:center; margin-top:10px; }
+    .ring-wrap svg { transform:rotate(-90deg); }
+    .score-big   { font-size:26px; font-weight:700; }
+    .score-denom { font-size:13px; color:var(--text-3); }
+    .stats-mini  { display:flex; gap:16px; margin-top:8px; }
+    .stat-mini-val { font-size:17px; font-weight:700; }
+    .stat-mini-lbl { font-size:11px; color:var(--text-3); }
+
+    /* Grid de respostas editável */
+    .grid-wrap { max-height:260px; overflow-y:auto; }
+    .grid-wrap::-webkit-scrollbar { width:4px; }
+    .grid-wrap::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+    .answer-row {
+      display:flex; align-items:center; gap:8px;
+      padding:5px 0; border-bottom:1px solid var(--border);
+      font-size:13px;
+    }
+    .answer-row:last-child { border-bottom:none; }
+    .q-label { font-family:var(--mono); font-size:11px; color:var(--text-3); width:26px; flex-shrink:0; }
+    .opt-mini {
+      width:28px; height:28px; border-radius:50%;
+      border:1.5px solid var(--border-strong); background:var(--surface);
+      color:var(--text-2); font-size:11px; font-weight:600;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:all .15s; font-family:var(--font);
+    }
+    .opt-mini:hover { border-color:var(--brand); color:var(--brand); }
+    .opt-mini.selected-correct { background:var(--green); border-color:var(--green); color:#fff; }
+    .opt-mini.selected-wrong   { background:var(--red);   border-color:var(--red);   color:#fff; }
+    .opt-mini.no-answer        { background:var(--surface-3); border-color:var(--amber); color:var(--amber); }
+    .confidence-bar {
+      flex:1; height:4px; background:var(--surface-3); border-radius:2px; overflow:hidden;
+    }
+    .confidence-fill { height:100%; border-radius:2px; background:var(--green); }
+
+    /* Upload area */
+    .upload-zone {
+      border:2px dashed var(--border-strong); border-radius:var(--radius-md);
+      padding:14px; text-align:center; cursor:pointer;
+      transition:all .15s; font-size:13px; color:var(--text-2);
+      margin-top:10px;
+    }
+    .upload-zone:hover { border-color:var(--brand); background:var(--brand-light); color:var(--brand); }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="dashboard.html">
+    <img src="/assets/img/logo.svg" alt="logo-clivon-edu">
+  </a>
+  <div class="nav-divider"></div>
+  <button class="nav-subject-btn" id="navSubjectBtn" onclick="window.location.href='dashboard.html'">...</button>
+  <div class="nav-spacer"></div>
+  <div class="nav-user" onclick="window.location.href='dashboard.html'">
+    <div class="nav-avatar" id="navInitials">--</div>
+    <span id="navName">...</span>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-header">
+    <h1>Escanear folha de resposta</h1>
+    <p>Capture ou envie a foto — confira o resultado antes de salvar.</p>
+  </div>
+
+  <div class="scan-layout">
+
+    <!-- ESQUERDA: visualizador -->
+    <div>
+      <div class="viewer-wrap" id="viewerWrap">
+        <video  id="cameraFeed" autoplay playsinline></video>
+        <img    id="previewImg" alt="Prévia">
+        <img    id="debugImg"   alt="Anotações OMR">
+        <canvas id="captureCanvas" style="display:none"></canvas>
+        <canvas id="overlayCanvas"></canvas>
+
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+
+        <div class="scan-placeholder" id="placeholder">
+          <svg width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
+            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+          <p>Câmera desligada.<br>Ligue a câmera ou envie uma foto.</p>
+        </div>
+
+        <div class="loading-overlay" id="loadingOverlay">
+          <div class="spinner"></div>
+          <span id="loadingText">Processando imagem...</span>
+        </div>
+
+        <div class="status-pill">
+          <div class="dot" id="statusDot"></div>
+          <span id="statusText">Pronto</span>
+        </div>
+      </div>
+
+      <!-- Botões câmera -->
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn btn-primary" id="btnCamera" onclick="startCamera()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Ligar câmera
+        </button>
+        <button class="btn btn-primary" id="btnCapture" style="display:none" onclick="capturePhoto()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+          Capturar
+        </button>
+        <button class="btn btn-secondary" onclick="resetAll()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg>
+          Novo scan
+        </button>
+      </div>
+
+      <!-- Toolbar de overlay (aparece após scan) -->
+      <div class="overlay-toolbar" id="overlayToolbar">
+        <button class="toggle-debug" id="btnToggleDebug" onclick="toggleDebug()">
+          🔍 Ver anotações OMR
+        </button>
+        <button class="toggle-debug" id="btnToggleOverlay" onclick="toggleOverlay()" style="display:none">
+          ◉ Ocultar overlay
+        </button>
+      </div>
+
+      <!-- Upload fallback -->
+      <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Enviar imagem do dispositivo
+      </div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleUpload(event)">
+    </div>
+
+    <!-- DIREITA: painel de revisão -->
+    <div class="right-panel">
+
+      <!-- Fase atual -->
+      <div class="phase-badge" id="phaseBadge">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Aguardando captura da folha
+      </div>
+
+      <!-- Dados do aluno -->
+      <div class="card">
+        <div class="card-title">Dados do aluno</div>
+        <div class="field" style="margin-bottom:10px">
+          <label>Nome</label>
+          <input id="studentName" placeholder="Identificado pelo OCR ou preencha manualmente">
+        </div>
+        <div class="field">
+          <label>Disciplina</label>
+          <input id="studentClass" readonly>
+        </div>
+      </div>
+
+      <!-- Desempenho -->
+      <div class="perf-card">
+        <div class="card-title">Desempenho</div>
+        <div class="perf-inner">
+          <div class="ring-wrap">
+            <svg width="58" height="58" viewBox="0 0 58 58">
+              <circle cx="29" cy="29" r="23" fill="none" stroke="var(--border)" stroke-width="5"/>
+              <circle id="ringProgress" cx="29" cy="29" r="23" fill="none" stroke="var(--green)"
+                stroke-width="5" stroke-dasharray="144.5" stroke-dashoffset="144.5"
+                stroke-linecap="round" style="transition:stroke-dashoffset 1s ease;"/>
+            </svg>
+          </div>
+          <div>
+            <div><span class="score-big" id="scoreDisplay">—</span><span class="score-denom"> /10</span></div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:2px">Nota final</div>
+            <div class="stats-mini">
+              <div><div class="stat-mini-val" style="color:var(--green)" id="correctCount">—</div><div class="stat-mini-lbl">Acertos</div></div>
+              <div><div class="stat-mini-val" style="color:var(--red)"   id="wrongCount">—</div><div class="stat-mini-lbl">Erros</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid de respostas editável -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="card-title" style="margin:0">Respostas — <span id="totalQ">0</span> questões</div>
+          <span style="font-size:11px;color:var(--text-3)" id="editHint"></span>
+        </div>
+        <div class="grid-wrap">
+          <div id="answersGrid">
+            <div class="empty">Aguardando processamento...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-primary" id="btnConfirm" style="justify-content:center" onclick="confirmAndSave()" disabled>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Confirmar e salvar nota
+        </button>
+        <button class="btn btn-ghost" style="justify-content:center" onclick="window.location.href='dashboard.html'">
+          Voltar ao menu
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// Estado
+// ═══════════════════════════════════════════════════════════════════════════
+let stream         = null;
+let currentSubject = "";
+let scanDraft      = null;   // último resultado do /scan (não salvo)
+let editedAnswers  = [];     // respostas após edição manual (tamanho = total real)
+let totalQuestions = 0;      // total real vindo do gabarito
+let showDebug      = false;
+let showOverlay    = true;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Init
+// ═══════════════════════════════════════════════════════════════════════════
+if (!CONFIG.getToken()) window.location.href = "login.html";
+
+window.addEventListener("DOMContentLoaded", () => {
+  currentSubject = sessionStorage.getItem("currentSubject");
+  if (!currentSubject) { window.location.href = "dashboard.html"; return; }
+
+  const userName = localStorage.getItem("clivon_user") || "Professor";
+  document.getElementById("navName").textContent = userName;
+  document.getElementById("navInitials").textContent =
+    userName.split(" ").slice(0,2).map(n=>n[0]).join("").toUpperCase();
+  document.getElementById("navSubjectBtn").textContent = currentSubject + " ▾";
+  document.getElementById("studentClass").value = currentSubject;
+
+  setStatus("", "Pronto para escanear");
+  resizeOverlay();
+  window.addEventListener("resize", resizeOverlay);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Câmera
+// ═══════════════════════════════════════════════════════════════════════════
+async function startCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode:"environment", width:{ideal:1280}, height:{ideal:960} }
+    });
+    const v = document.getElementById("cameraFeed");
+    v.srcObject = stream;
+    v.style.display = "block";
+    document.getElementById("placeholder").style.display = "none";
+    document.getElementById("btnCamera").style.display  = "none";
+    document.getElementById("btnCapture").style.display = "inline-flex";
+    setStatus("ready", "Câmera ativa");
+  } catch(err) {
+    const msg = err.name === "NotAllowedError"
+      ? "Permissão negada. Use o upload abaixo." : "Câmera indisponível. Use o upload.";
+    showToast(msg, true);
+    document.getElementById("placeholder").querySelector("p").textContent =
+      "Câmera bloqueada.\nEnvie uma foto abaixo.";
+  }
+}
+
+function capturePhoto() {
+  const v = document.getElementById("cameraFeed");
+  const c = document.getElementById("captureCanvas");
+  c.width  = v.videoWidth;
+  c.height = v.videoHeight;
+  c.getContext("2d").drawImage(v, 0, 0);
+  const dataUrl = c.toDataURL("image/jpeg", 0.88);
+  showImagePreview(dataUrl);
+  processImage(dataUrl.split(",")[1]);
+}
+
+function handleUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const dataUrl = ev.target.result;
+    showImagePreview(dataUrl);
+    processImage(dataUrl.split(",")[1]);
+  };
+  reader.readAsDataURL(file);
+}
+
+function showImagePreview(dataUrl) {
+  const preview = document.getElementById("previewImg");
+  const video   = document.getElementById("cameraFeed");
+  preview.src     = dataUrl;
+  preview.style.display  = "block";
+  video.style.display    = "none";
+  document.getElementById("placeholder").style.display = "none";
+  document.getElementById("btnCapture").style.display  = "none";
+  document.getElementById("btnCamera").style.display   = "inline-flex";
+  if (stream) { stream.getTracks().forEach(t=>t.stop()); stream = null; }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Processamento OMR
+// ═══════════════════════════════════════════════════════════════════════════
+async function processImage(base64) {
+  setPhase("scan");
+  setStatus("scan", "Analisando bolinhas...");
+  document.getElementById("loadingOverlay").classList.add("active");
+  document.getElementById("loadingText").textContent = "Processando imagem...";
+
+  const name = document.getElementById("studentName").value.trim() || "Aluno";
+
+  try {
+    const res = await CONFIG.apiFetch("/scan", {
+      method: "POST",
+      body: JSON.stringify({
+        student_name: name,
+        subject: currentSubject,
+        class_id: currentSubject,
+        image_base64: base64,
+      }),
+    });
+
+    if (!res) return;
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || "Erro ao processar.");
+    }
+
+    scanDraft = await res.json();
+
+    // ── FIX: total real vem do gabarito (correct_answers), não do OMR ──
+    totalQuestions = scanDraft.correct_answers.length;
+
+    // Preenche editedAnswers com o tamanho TOTAL do gabarito.
+    // Questões não detectadas pelo OMR ficam como null (sem resposta).
+    editedAnswers = Array.from({ length: totalQuestions }, (_, i) =>
+      scanDraft.answers_read[i] ?? null
+    );
+
+    document.getElementById("studentName").value = scanDraft.student_name;
+    renderResults(scanDraft);
+
+    // Mostra imagem anotada pelo backend (se disponível)
+    if (scanDraft.debug_image_b64) {
+      const dImg = document.getElementById("debugImg");
+      dImg.src = "data:image/jpeg;base64," + scanDraft.debug_image_b64;
+    }
+
+    // Desenha overlay no canvas
+    drawOverlay(scanDraft.detections, scanDraft.correct_answers);
+
+    document.getElementById("overlayToolbar").classList.add("visible");
+    if (scanDraft.debug_image_b64) {
+      document.getElementById("btnToggleDebug").style.display = "inline-block";
+    }
+    document.getElementById("btnToggleOverlay").style.display = "inline-block";
+
+    setPhase("review");
+    setStatus("review", "Revise e confirme");
+
+    // Avisa se o OMR detectou menos respostas que o total
+    const detected = scanDraft.answers_read.length;
+    if (detected < totalQuestions) {
+      showToast(
+        `⚠️ OMR detectou ${detected} de ${totalQuestions} questões. Revise as faltantes.`,
+        true
+      );
+    } else {
+      showToast("Folha processada — confira as respostas.", false);
+    }
+
+  } catch(err) {
+    setStatus("", err.message);
+    showToast(err.message, true);
+    setPhase("idle");
+  } finally {
+    document.getElementById("loadingOverlay").classList.remove("active");
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Canvas overlay — desenha bolinhas sobre a foto
+// ═══════════════════════════════════════════════════════════════════════════
+function resizeOverlay() {
+  const wrap   = document.getElementById("viewerWrap");
+  const canvas = document.getElementById("overlayCanvas");
+  canvas.width  = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  if (scanDraft) drawOverlay(scanDraft.detections, scanDraft.correct_answers);
+}
+
+function drawOverlay(detections, correctAnswers) {
+  if (!showOverlay) return;
+  const canvas = document.getElementById("overlayCanvas");
+  const ctx    = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  if (!detections || !detections.length) return;
+
+  detections.forEach((det, qi) => {
+    det.bubbles.forEach(b => {
+      const cx = b.cx * W;
+      const cy = b.cy * H;
+      const r  = Math.max(8, b.r * Math.max(W, H));
+
+      if (b.filled) {
+        const isCorrect = b.option === correctAnswers[qi];
+        const fillColor = isCorrect ? "rgba(16,185,129,0.75)" : "rgba(239,68,68,0.75)";
+        const stroke    = isCorrect ? "#10b981" : "#ef4444";
+
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+        ctx.fillStyle = fillColor; ctx.fill();
+        ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke();
+
+        ctx.fillStyle = "#fff";
+        ctx.font = `bold ${Math.round(r*1.1)}px sans-serif`;
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(isCorrect ? "✓" : "✕", cx, cy);
+      } else {
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+        ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1; ctx.stroke();
+      }
+    });
+  });
+}
+
+function toggleDebug() {
+  showDebug = !showDebug;
+  const btn   = document.getElementById("btnToggleDebug");
+  const dImg  = document.getElementById("debugImg");
+  const pImg  = document.getElementById("previewImg");
+
+  btn.classList.toggle("active", showDebug);
+  btn.textContent = showDebug ? "🔍 Ocultar anotações OMR" : "🔍 Ver anotações OMR";
+
+  if (showDebug) {
+    dImg.style.display   = "block";
+    dImg.style.opacity   = "1";
+    pImg.style.opacity   = "0";
+    clearOverlay();
+  } else {
+    dImg.style.opacity   = "0";
+    pImg.style.opacity   = "1";
+    setTimeout(() => { dImg.style.display = "none"; }, 400);
+    if (showOverlay && scanDraft) drawOverlay(scanDraft.detections, scanDraft.correct_answers);
+  }
+}
+
+function toggleOverlay() {
+  showOverlay = !showOverlay;
+  const btn = document.getElementById("btnToggleOverlay");
+  btn.classList.toggle("active", showOverlay);
+  btn.textContent = showOverlay ? "◉ Ocultar overlay" : "◉ Mostrar overlay";
+  if (showOverlay && scanDraft) drawOverlay(scanDraft.detections, scanDraft.correct_answers);
+  else clearOverlay();
+}
+
+function clearOverlay() {
+  const c = document.getElementById("overlayCanvas");
+  c.getContext("2d").clearRect(0,0,c.width,c.height);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Renderiza resultados + grid editável
+// ═══════════════════════════════════════════════════════════════════════════
+function renderResults(data) {
+  const score = data.score;
+  document.getElementById("scoreDisplay").textContent  = score.toFixed(1);
+  document.getElementById("correctCount").textContent  = data.correct;
+  document.getElementById("wrongCount").textContent    = data.wrong;
+
+  // ── FIX: exibe o total do GABARITO, não do answers_read ──
+  document.getElementById("totalQ").textContent = totalQuestions;
+  document.getElementById("editHint").textContent = "Clique para corrigir";
+
+  // Ring
+  const circ = 144.5;
+  const pct  = score / 10;
+  document.getElementById("ringProgress").setAttribute("stroke-dashoffset", circ*(1-pct));
+  const col = score>=7 ? "var(--green)" : score>=5 ? "var(--amber)" : "var(--red)";
+  document.getElementById("ringProgress").setAttribute("stroke", col);
+
+  // ── FIX: grid itera sobre o TOTAL do gabarito, não sobre answers_read ──
+  const grid    = document.getElementById("answersGrid");
+  const options = ["A","B","C","D","E"];
+
+  grid.innerHTML = Array.from({ length: totalQuestions }, (_, i) => {
+    const ans     = editedAnswers[i];           // pode ser null se não detectado
+    const correct = data.correct_answers[i];
+    const isRight = ans !== null && ans === correct;
+    const conf    = data.detections?.[i]?.confidence ?? (ans ? 1 : 0);
+
+    const opts = options.map(opt => {
+      let cls = "opt-mini";
+      if (opt === ans) cls += isRight ? " selected-correct" : " selected-wrong";
+      return `<button class="${cls}" data-q="${i}" data-opt="${opt}" onclick="editAnswer(${i},'${opt}')">${opt}</button>`;
+    }).join("");
+
+    // Label da barra de confiança / indicador de não-detectado
+    const barColor = ans === null
+      ? "var(--amber)"
+      : conf > .7 ? "var(--green)" : conf > .4 ? "var(--amber)" : "var(--red)";
+
+    return `<div class="answer-row">
+      <span class="q-label">${String(i+1).padStart(2,"0")}</span>
+      ${opts}
+      <div class="confidence-bar" title="${ans === null ? 'Não detectado — clique para responder' : Math.round(conf*100)+'% confiança'}">
+        <div class="confidence-fill" style="width:${ans === null ? 100 : Math.round(conf*100)}%;background:${barColor}"></div>
+      </div>
+    </div>`;
+  }).join("");
+
+  document.getElementById("btnConfirm").disabled = false;
+}
+
+function editAnswer(qIdx, opt) {
+  if (!scanDraft) return;
+
+  // Toggle: clica na mesma opção já selecionada → desmarca (null)
+  editedAnswers[qIdx] = editedAnswers[qIdx] === opt ? null : opt;
+  const ans     = editedAnswers[qIdx];
+  const correct = scanDraft.correct_answers[qIdx];
+
+  // Atualiza visual do row
+  const row = document.querySelector(`button[data-q="${qIdx}"]`)?.closest(".answer-row");
+  if (row) {
+    row.querySelectorAll(".opt-mini").forEach(btn => {
+      btn.className = "opt-mini";
+      if (btn.dataset.opt === ans) {
+        btn.className += ans === correct ? " selected-correct" : " selected-wrong";
+      }
+    });
+  }
+
+  // ── FIX: recalcula sobre totalQuestions, não editedAnswers.length ──
+  recalcScore();
+}
+
+function recalcScore() {
+  const rights = editedAnswers.filter((a, i) => a !== null && a === scanDraft.correct_answers[i]).length;
+  const wrongs = totalQuestions - rights;
+  const score  = parseFloat(((rights / totalQuestions) * 10).toFixed(2));
+
+  document.getElementById("scoreDisplay").textContent = score.toFixed(1);
+  document.getElementById("correctCount").textContent = rights;
+  document.getElementById("wrongCount").textContent   = wrongs;
+
+  const circ = 144.5;
+  document.getElementById("ringProgress").setAttribute("stroke-dashoffset", circ*(1-score/10));
+  const col = score>=7 ? "var(--green)" : score>=5 ? "var(--amber)" : "var(--red)";
+  document.getElementById("ringProgress").setAttribute("stroke", col);
+
+  // Redesenha overlay com respostas editadas
+  const fakeDetections = (scanDraft.detections || []).map((d, i) => ({
+    ...d,
+    bubbles: d.bubbles.map(b => ({ ...b, filled: b.option === editedAnswers[i] }))
+  }));
+  drawOverlay(fakeDetections, scanDraft.correct_answers);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Confirmar e salvar
+// ═══════════════════════════════════════════════════════════════════════════
+async function confirmAndSave() {
+  if (!scanDraft) return;
+
+  // Verifica se todas as questões foram respondidas
+  const unanswered = editedAnswers.filter(a => a === null).length;
+  if (unanswered > 0) {
+    const ok = confirm(`${unanswered} questão(ões) sem resposta serão contadas como erradas. Deseja continuar?`);
+    if (!ok) return;
+  }
+
+  // Substitui null por "" para enviar ao backend
+  const answersToSend = editedAnswers.map(a => a ?? "");
+
+  const btn = document.getElementById("btnConfirm");
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="border-top-color:white"></div> Salvando...';
+
+  try {
+    const res = await CONFIG.apiFetch("/confirm_result", {
+      method: "POST",
+      body: JSON.stringify({
+        result_id: scanDraft.answer_key_id,
+        student_name: document.getElementById("studentName").value.trim() || "Aluno",
+        answers_final: answersToSend,
+      }),
+    });
+
+    if (!res) return;
+    if (!res.ok) throw new Error((await res.json()).detail || "Erro ao salvar.");
+
+    setPhase("saved");
+    setStatus("done", "Salvo com sucesso");
+    showToast("Nota salva no histórico!", false, true);
+    setTimeout(() => window.location.href = "dashboard.html", 1400);
+
+  } catch(err) {
+    showToast(err.message, true);
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Confirmar e salvar nota';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Helpers de UI
+// ═══════════════════════════════════════════════════════════════════════════
+function setStatus(state, text) {
+  document.getElementById("statusDot").className   = "dot " + state;
+  document.getElementById("statusText").textContent = text;
+}
+
+function setPhase(phase) {
+  const el  = document.getElementById("phaseBadge");
+  const map = {
+    idle:   { cls:"",             icon:"ℹ", text:"Aguardando captura da folha" },
+    scan:   { cls:"",             icon:"⚙", text:"Analisando imagem com OMR..." },
+    review: { cls:"",             icon:"✏", text:"Revise as respostas antes de salvar" },
+    saved:  { cls:"confirm saved",icon:"✓", text:"Nota salva no histórico!" },
+  };
+  const p = map[phase] || map.idle;
+  el.className = "phase-badge " + p.cls;
+  el.innerHTML = `<span>${p.icon}</span> ${p.text}`;
+}
+
+function resetAll() {
+  if (stream) { stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  ["cameraFeed","previewImg","debugImg"].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.display = "none";
+    if (el.tagName === "IMG") el.src = "";
+  });
+  document.getElementById("placeholder").style.display = "flex";
+  document.getElementById("btnCapture").style.display  = "none";
+  document.getElementById("btnCamera").style.display   = "inline-flex";
+  document.getElementById("overlayToolbar").classList.remove("visible");
+  clearOverlay();
+  document.getElementById("answersGrid").innerHTML = '<div class="empty">Aguardando processamento...</div>';
+  document.getElementById("scoreDisplay").textContent = "—";
+  document.getElementById("correctCount").textContent = "—";
+  document.getElementById("wrongCount").textContent   = "—";
+  document.getElementById("totalQ").textContent = "0";
+  document.getElementById("ringProgress").setAttribute("stroke-dashoffset","144.5");
+  document.getElementById("btnConfirm").disabled = true;
+  document.getElementById("fileInput").value = "";
+  scanDraft      = null;
+  editedAnswers  = [];
+  totalQuestions = 0;
+  showDebug      = false;
+  setPhase("idle");
+  setStatus("", "Pronto para escanear");
+}
+
+function showToast(msg, isError=false, isSuccess=false) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className   = "toast show" + (isError?" error":isSuccess?" success":"");
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove("show"), 3200);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clivon Edu — Painel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" href="/assets/img/icon.svg" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:       #2D5BE3;
+      --blue-light: #2563EB;
+      --blue-icon:  #3B5FD9;
+      --green:      #22C55E;
+      --red:        #EF4444;
+      --amber:      #F59E0B;
+      --bg:         #F0F2F7;
+      --surface:    #FFFFFF;
+      --border:     #E5E7EB;
+      --text-1:     #111827;
+      --text-2:     #6B7280;
+      --text-3:     #9CA3AF;
+      --nav-h:      52px;
+    }
+
+    html { font-size: 14px; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      height: var(--nav-h);
+      background: var(--blue);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none; color: #fff; line-height: 1;
+    }
+    .nav-logo-mark {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 15px; font-weight: 700; letter-spacing: -.3px;
+    }
+    .nav-logo-mark svg { flex-shrink: 0; }
+    .nav-logo-sub {
+      font-size: 10px; font-weight: 400; opacity: .7;
+      display: block; margin-top: 1px; letter-spacing: .02em;
+    }
+    .nav-spacer { flex: 1; }
+
+    .nav-user {
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer; padding: 5px 8px; border-radius: 8px;
+      transition: background .15s; position: relative;
+    }
+    .nav-user:hover { background: rgba(255,255,255,.12); }
+
+    .nav-avatar {
+      width: 32px; height: 32px; border-radius: 7px;
+      background: rgba(255,255,255,.25); overflow: hidden;
+      flex-shrink: 0; display: flex; align-items: center;
+      justify-content: center; font-size: 12px; font-weight: 700; color: #fff;
+      border: 2px solid rgba(255,255,255,.3);
+      transition: border-color .15s;
+    }
+    .nav-user:hover .nav-avatar { border-color: rgba(255,255,255,.7); }
+    .nav-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .nav-user-info { line-height: 1.3; }
+    .nav-user-name  { font-size: 13px; font-weight: 600; color: #fff; }
+    .nav-user-email { font-size: 11px; color: rgba(255,255,255,.65); }
+    .nav-chevron { color: rgba(255,255,255,.7); margin-left: 2px; transition: transform .2s; }
+    .nav-user.open .nav-chevron { transform: rotate(180deg); }
+
+    .profile-dropdown {
+      position: absolute; top: calc(100% + 10px); right: 0;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 12px; padding: 6px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.12);
+      min-width: 200px;
+      display: none; flex-direction: column; gap: 2px;
+      z-index: 200;
+    }
+    .profile-dropdown.open { display: flex; }
+
+    .dd-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 10px 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+    }
+    .dd-avatar {
+      width: 38px; height: 38px; border-radius: 9px;
+      background: #EEF2FF; color: var(--blue-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; flex-shrink: 0;
+      overflow: hidden;
+    }
+    .dd-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .dd-name  { font-size: 13px; font-weight: 600; color: var(--text-1); }
+    .dd-email { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+    .dd-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px; border-radius: 7px;
+      font-size: 13px; color: var(--text-1);
+      cursor: pointer; border: none; background: none;
+      width: 100%; text-align: left;
+      font-family: 'Inter', sans-serif;
+      transition: background .12s;
+    }
+    .dd-item:hover { background: var(--bg); }
+    .dd-item i { font-size: 15px; color: var(--text-3); }
+    .dd-item.danger { color: var(--red); }
+    .dd-item.danger i { color: var(--red); }
+    .dd-item.danger:hover { background: #fef2f2; }
+
+    /* ── PAGE ── */
+    .page-wrap { max-width: 1180px; margin: 0 auto; padding: 40px 28px 60px; }
+    .page-header { margin-bottom: 32px; }
+    .page-header h1 {
+      font-size: 32px; font-weight: 800; color: var(--text-1);
+      letter-spacing: -.5px; margin-bottom: 6px;
+    }
+    .page-header p { font-size: 14px; color: var(--text-2); }
+
+    /* ── SUBJECT GRID ── */
+    .subjects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    @media (max-width: 900px) { .subjects-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 560px) { .subjects-grid { grid-template-columns: 1fr; } }
+
+    .subject-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 20px 18px;
+      display: flex; flex-direction: column;
+      transition: box-shadow .18s;
+    }
+    .subject-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.07); }
+
+    .card-top {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 20px;
+    }
+    .card-left { display: flex; align-items: center; gap: 11px; }
+
+    .s-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--blue-light); color: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .s-icon i { font-size: 18px; line-height: 1; }
+
+    .s-info { line-height: 1.3; }
+    .s-name { font-size: 14px; font-weight: 700; color: var(--text-1); }
+    .s-sub  { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+    .badge-key-yes {
+      font-size: 11px; font-weight: 600; color: var(--green);
+      white-space: nowrap; display: flex; align-items: center; gap: 3px;
+    }
+    .badge-key-no { font-size: 11px; color: var(--text-3); white-space: nowrap; }
+
+    /* ── EXPORT DROPDOWN ── */
+    .export-wrap { position: relative; margin-bottom: 10px; }
+    .btn-export {
+      width: 100%; height: 36px; background: #fff;
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: space-between; padding: 0 14px; gap: 8px;
+      color: var(--text-1); transition: background .15s;
+    }
+    .btn-export:hover { background: #f9fafb; }
+    .btn-export .btn-export-left { display: flex; align-items: center; gap: 6px; }
+    .btn-export i { font-size: 15px; color: var(--text-2); }
+    .btn-export .ph-caret-down {
+      font-size: 13px; color: var(--text-3);
+      transition: transform .2s;
+    }
+    .btn-export.open .ph-caret-down { transform: rotate(180deg); }
+
+    .export-dropdown {
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.10);
+      z-index: 50;
+      display: none; flex-direction: column; padding: 6px;
+      animation: fadeDown .15s ease;
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .export-dropdown.open { display: flex; }
+    .export-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 12px; border-radius: 7px;
+      font-size: 13px; color: var(--text-1); cursor: pointer;
+      border: none; background: none; width: 100%;
+      text-align: left; font-family: 'Inter', sans-serif;
+      transition: background .12s;
+    }
+    .export-item:hover { background: var(--bg); }
+    .export-item i { font-size: 16px; color: var(--text-3); }
+    .export-item-label { flex: 1; }
+    .export-item-badge {
+      font-size: 10px; font-weight: 600; color: var(--text-3);
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 4px; padding: 2px 5px;
+    }
+
+    .stats-row { display: flex; gap: 10px; margin-bottom: 16px; }
+    .stat-pill {
+      background: #F9FAFB; border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 14px; min-width: 80px;
+    }
+    .stat-pill .sv { font-size: 16px; font-weight: 700; color: var(--text-1); line-height: 1; }
+    .stat-pill .sv.green { color: var(--green); }
+    .stat-pill .sl { font-size: 10px; color: var(--text-3); margin-top: 3px; }
+
+    /* ── CARD BUTTONS ── */
+    .card-btns { display: flex; gap: 8px; margin-bottom: 8px; }
+    .btn-gab {
+      flex: 1; height: 38px; background: #111827; color: #fff;
+      border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: background .15s;
+    }
+    .btn-gab:hover { background: #1f2937; }
+    
+    .btn-scan {
+      flex: 1; height: 38px; background: var(--blue); color: #fff;
+      border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: background .15s;
+    }
+    .btn-scan:hover { background: #2449c0; }
+
+    /* NOVO: BOTÃO DE CHAMADA */
+    .btn-chamada {
+      width: 100%; height: 36px; background: #F3F4F6; color: var(--text-1);
+      border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-weight: 600;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: all .15s;
+    }
+    .btn-chamada:hover { background: #E5E7EB; border-color: #D1D5DB; }
+    .btn-chamada i { color: var(--text-2); font-size: 16px; }
+
+    /* ── HISTORY ── */
+    .hist-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+    }
+    .hist-title { font-size: 18px; font-weight: 700; color: var(--text-1); }
+    .hist-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .filter-pill {
+      height: 36px; padding: 0 18px; border-radius: 20px;
+      font-size: 13px; font-weight: 600;
+      font-family: 'Inter', sans-serif; cursor: pointer; border: none;
+      transition: all .15s;
+    }
+    .fp-blue    { background: var(--blue); color: #fff; }
+    .fp-blue:hover  { background: #2449c0; }
+    .fp-dark    { background: #111827; color: #fff; }
+    .fp-dark:hover  { background: #1f2937; }
+    .fp-outline { background: #fff; color: var(--text-1); border: 1px solid var(--border); }
+    .fp-outline:hover { background: #f9fafb; }
+
+    .btn-clear {
+      height: 36px; padding: 0 16px; border-radius: 20px;
+      font-size: 13px; font-weight: 500;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      background: #fff; color: var(--text-1); border: 1px solid var(--border);
+      display: flex; align-items: center; gap: 6px; transition: all .15s;
+    }
+    .btn-clear:hover { background: #fef2f2; border-color: #fca5a5; color: var(--red); }
+
+    .hist-table-wrap {
+      background: var(--surface); border-radius: 12px;
+      border: 1px solid var(--border); overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { border-bottom: 1px solid var(--border); }
+    th {
+      padding: 14px 20px; text-align: left;
+      font-size: 12px; font-weight: 500; color: var(--text-3);
+    }
+    td {
+      padding: 14px 20px; font-size: 14px; color: var(--text-1);
+      border-bottom: 1px solid #F3F4F6;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #FAFAFA; }
+    .td-green { color: var(--green); font-weight: 600; }
+    .td-amber { color: var(--amber); font-weight: 600; }
+    .td-red   { color: var(--red);   font-weight: 600; }
+    .empty-row td { text-align: center; padding: 32px; color: var(--text-3); font-size: 13px; }
+
+    /* ── MODALS & TOASTS... ── */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      display: none; align-items: center; justify-content: center; z-index: 1000;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: #fff; border-radius: 16px; padding: 28px;
+      max-width: 420px; width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,.15);
+      animation: popIn .2s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popIn { from{transform:scale(.9);opacity:0} to{transform:scale(1);opacity:1} }
+    .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .modal > p { font-size: 13px; color: var(--text-2); margin-bottom: 20px; }
+
+    .avatar-preview-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      margin-bottom: 20px;
+    }
+    .avatar-preview {
+      width: 88px; height: 88px; border-radius: 16px;
+      background: #EEF2FF; border: 2px dashed #c7d2fe;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 700; color: var(--blue-light);
+      overflow: hidden; transition: border-color .15s;
+      cursor: pointer; position: relative;
+    }
+    .avatar-preview:hover { border-color: var(--blue); }
+    .avatar-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .avatar-preview-hint { font-size: 12px; color: var(--text-3); text-align: center; line-height: 1.5; }
+
+    .upload-zone {
+      border: 2px dashed var(--border); border-radius: 10px;
+      padding: 18px; text-align: center; cursor: pointer;
+      transition: all .15s; margin-bottom: 16px;
+    }
+    .upload-zone:hover { border-color: var(--blue); background: #EEF2FF; }
+    .upload-zone i { font-size: 22px; color: var(--text-3); display: block; margin-bottom: 6px; }
+    .upload-zone span { font-size: 13px; color: var(--text-2); }
+    .upload-zone small { display: block; font-size: 11px; color: var(--text-3); margin-top: 3px; }
+
+    .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
+    .modal-btns button {
+      flex: 1; height: 38px; border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      font-family: 'Inter', sans-serif; cursor: pointer; border: none;
+    }
+    .modal-cancel  { background: #F3F4F6; color: var(--text-1); }
+    .modal-cancel:hover  { background: #e5e7eb; }
+    .modal-save    { background: var(--blue); color: #fff; }
+    .modal-save:hover    { background: #2449c0; }
+    .modal-remove  { background: #fff; color: var(--red); border: 1px solid #fca5a5 !important; }
+    .modal-remove:hover  { background: #fef2f2; }
+    .modal-confirm { background: var(--red); color: #fff; }
+    .modal-confirm:hover { background: #dc2626; }
+    .modal p.modal-body { font-size: 13px; color: var(--text-2); line-height: 1.6; margin-bottom: 22px; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(70px);
+      background: #111827; color: #fff; padding: 10px 20px;
+      border-radius: 8px; font-size: 13px; font-weight: 500;
+      box-shadow: 0 4px 16px rgba(0,0,0,.15);
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+      opacity: 0; pointer-events: none; z-index: 9999; white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.err  { background: var(--red); }
+    .toast.ok   { background: #16a34a; }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="dashboard.html">
+    <div>
+      <div class="nav-logo-mark">
+        <img src="/assets/img/logo.svg" alt="logo-clivon">
+      </div>
+    </div>
+  </a>
+
+  <div class="nav-spacer"></div>
+
+  <div class="nav-user" id="navUser" onclick="toggleDropdown()">
+    <div class="nav-avatar" id="navAvatar">LJ</div>
+    <div class="nav-user-info">
+      <div class="nav-user-name"  id="navName">Letícia Johnson</div>
+      <div class="nav-user-email" id="navEmail">leticia@escola.edu.br</div>
+    </div>
+    <svg class="nav-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+
+    <div class="profile-dropdown" id="profileDropdown">
+      <div class="dd-header">
+        <div class="dd-avatar" id="ddAvatar">LJ</div>
+        <div>
+          <div class="dd-name"  id="ddName">Letícia Johnson</div>
+          <div class="dd-email" id="ddEmail">leticia@escola.edu.br</div>
+        </div>
+      </div>
+
+      <button class="dd-item" onclick="openPhotoModal(); event.stopPropagation();">
+        <i class="ph ph-user-circle"></i>
+        Alterar foto de perfil
+      </button>
+
+      <button class="dd-item" onclick="openClearModal(); event.stopPropagation();">
+        <i class="ph ph-trash"></i>
+        Limpar histórico
+      </button>
+
+      <button class="dd-item danger" onclick="logout(); event.stopPropagation();">
+        <i class="ph ph-sign-out"></i>
+        Sair da conta
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <div class="page-header">
+    <h1 id="welcomeTitle">Olá, Letícia</h1>
+    <p>Selecione uma disciplina para escanear, configurar gabarito ou registrar faltas.</p>
+  </div>
+
+  <div class="subjects-grid" id="subjectGrid"></div>
+
+  <div>
+    <div class="hist-header">
+      <span class="hist-title">Últimas correções</span>
+      <div class="hist-controls">
+        <div id="filterRow" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+        <button class="btn-clear" id="btnClear" onclick="openClearModal()" style="display:none;">
+          <i class="ph ph-trash" style="font-size:14px;"></i>
+          Limpar histórico
+        </button>
+      </div>
+    </div>
+    <div class="hist-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Aluno</th><th>Disciplina</th><th>Nota</th><th>Acertos</th><th>Data</th>
+          </tr>
+        </thead>
+        <tbody id="histBody">
+          <tr class="empty-row"><td colspan="5">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-backdrop" id="photoModal">
+  <div class="modal">
+    <h3>Foto de perfil</h3>
+    <p>Clique na prévia ou na zona abaixo para enviar uma imagem.</p>
+
+    <div class="avatar-preview-wrap">
+      <div class="avatar-preview" id="avatarPreview" onclick="document.getElementById('photoInput').click()">
+        <span id="avatarPreviewInitials">LJ</span>
+      </div>
+      <span class="avatar-preview-hint">Clique para selecionar<br>JPG, PNG ou WebP — qualquer tamanho</span>
+    </div>
+
+    <div class="upload-zone" onclick="document.getElementById('photoInput').click()">
+      <i class="ph ph-upload-simple"></i>
+      <span>Clique para escolher arquivo</span>
+      <small>ou arraste a imagem aqui · JPG, PNG ou WebP</small>
+    </div>
+
+    <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handlePhotoSelect(event)">
+
+    <div class="modal-btns">
+      <button class="modal-cancel"  onclick="closePhotoModal()">Cancelar</button>
+      <button class="modal-remove"  id="btnRemovePhoto" onclick="removePhoto()" style="display:none;">Remover foto</button>
+      <button class="modal-save"    onclick="savePhoto()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="clearModal">
+  <div class="modal">
+    <h3>Limpar histórico</h3>
+    <p class="modal-body" id="clearModalText">Deseja apagar todos os registros? Esta ação não pode ser desfeita.</p>
+    <div class="modal-btns">
+      <button class="modal-cancel"  onclick="closeClearModal()">Cancelar</button>
+      <button class="modal-confirm" onclick="execClear()" id="btnExecClear">Apagar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script>
+const ICONS = {
+  "Português":       `<i class="ph ph-book-open"></i>`,
+  "Matemática":      `<i class="ph ph-calculator"></i>`,
+  "Ciências":        `<i class="ph ph-flask"></i>`,
+  "História":        `<i class="ph ph-scroll"></i>`,
+  "Geografia":       `<i class="ph ph-globe-hemisphere-west"></i>`,
+  "Arte":            `<i class="ph ph-palette"></i>`,
+  "Educação Física": `<i class="ph ph-basketball"></i>`,
+  "Inglês":          `<i class="ph ph-translate"></i>`,
+};
+
+const SUBJECTS = [
+  "Português","Matemática","Ciências","História",
+  "Geografia","Arte","Educação Física","Inglês",
+];
+
+let allResults   = [];
+let activeFilter = "ALL";
+let clearTarget  = "ALL";
+let pendingPhoto = null;
+
+function avatarKey() {
+  const email = localStorage.getItem("clivon_email") || "default";
+  return `clivon_avatar_${email}`;
+}
+
+if (!CONFIG.getToken()) window.location.href = "login.html";
+
+window.addEventListener("DOMContentLoaded", () => {
+  const name = localStorage.getItem("clivon_user") || "Professor";
+  setUserUI(name);
+  loadDashboard();
+
+  document.addEventListener("click", e => {
+    const user = document.getElementById("navUser");
+    if (!user.contains(e.target)) closeDropdown();
+
+    if (!e.target.closest(".export-wrap")) {
+      document.querySelectorAll(".export-dropdown").forEach(d => d.classList.remove("open"));
+      document.querySelectorAll(".btn-export").forEach(b => b.classList.remove("open"));
+    }
+  });
+
+  const zone = document.querySelector(".upload-zone");
+  zone.addEventListener("dragover", e => { e.preventDefault(); zone.style.borderColor = "var(--blue)"; });
+  zone.addEventListener("dragleave", () => { zone.style.borderColor = ""; });
+  zone.addEventListener("drop", e => {
+    e.preventDefault();
+    zone.style.borderColor = "";
+    const file = e.dataTransfer.files[0];
+    if (file) processPhotoFile(file);
+  });
+});
+
+function setUserUI(name) {
+  const firstName = name.split(" ")[0];
+  const initials  = name.split(" ").slice(0,2).map(n=>n[0]).join("").toUpperCase();
+  const email     = localStorage.getItem("clivon_email") || "";
+
+  document.getElementById("welcomeTitle").textContent = `Olá, ${firstName}`;
+  document.getElementById("navName").textContent      = name;
+  document.getElementById("ddName").textContent       = name;
+  document.getElementById("ddEmail").textContent      = email;
+  document.getElementById("navEmail").textContent     = email;
+
+  const savedPhoto = localStorage.getItem(avatarKey());
+  applyAvatarToAll(savedPhoto, initials);
+}
+
+function applyAvatarToAll(photoB64, initials) {
+  const navAv = document.getElementById("navAvatar");
+  const ddAv  = document.getElementById("ddAvatar");
+
+  if (photoB64) {
+    const imgTag = `<img src="${photoB64}" alt="avatar">`;
+    navAv.innerHTML = imgTag;
+    ddAv.innerHTML  = imgTag;
+  } else {
+    navAv.innerHTML = initials || "?";
+    ddAv.innerHTML  = initials || "?";
+  }
+}
+
+function toggleDropdown() {
+  const dd   = document.getElementById("profileDropdown");
+  const user = document.getElementById("navUser");
+  const open = dd.classList.toggle("open");
+  user.classList.toggle("open", open);
+}
+function closeDropdown() {
+  document.getElementById("profileDropdown").classList.remove("open");
+  document.getElementById("navUser").classList.remove("open");
+}
+
+function toggleExport(subjectKey, e) {
+  e.stopPropagation();
+  const drop = document.getElementById(`exportDrop_${subjectKey}`);
+  const btn  = document.getElementById(`exportBtn_${subjectKey}`);
+  const isOpen = drop.classList.toggle("open");
+  btn.classList.toggle("open", isOpen);
+
+  document.querySelectorAll(".export-dropdown").forEach(d => {
+    if (d !== drop) d.classList.remove("open");
+  });
+  document.querySelectorAll(".btn-export").forEach(b => {
+    if (b !== btn) b.classList.remove("open");
+  });
+}
+
+async function exportSubject(subject, type, e) {
+  e.stopPropagation();
+  const subjectKey = subject.replace(/\s/g, '_');
+  document.getElementById(`exportDrop_${subjectKey}`).classList.remove("open");
+  document.getElementById(`exportBtn_${subjectKey}`).classList.remove("open");
+
+  const map = {
+    csv:      { path: "/export/csv",      ext: "xlsx", mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+    pdf:      { path: "/export/pdf",      ext: "pdf",  mime: "application/pdf" },
+    gabarito: { path: "/export/gabarito", ext: "pdf",  mime: "application/pdf" },
+  };
+  const { path, ext, mime } = map[type];
+
+  toast("Gerando arquivo...");
+
+  try {
+    const res = await CONFIG.apiFetch(`${path}?subject=${encodeURIComponent(subject)}`);
+    if (!res || !res.ok) { toast("Erro ao exportar. Tente novamente.", "err"); return; }
+
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    const date = new Date().toISOString().slice(0,10).replace(/-/g,"");
+    a.href     = url;
+    a.download = `${type}_${subject.replace(/\s/g,"_")}_${date}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("Download iniciado!", "ok");
+  } catch {
+    toast("Erro ao exportar. Servidor offline?", "err");
+  }
+}
+
+function openPhotoModal() {
+  closeDropdown();
+  pendingPhoto = null;
+  const name     = localStorage.getItem("clivon_user") || "Professor";
+  const initials = name.split(" ").slice(0,2).map(n=>n[0]).join("").toUpperCase();
+  const saved  = localStorage.getItem(avatarKey());
+  const preview = document.getElementById("avatarPreview");
+  const btn     = document.getElementById("btnRemovePhoto");
+
+  if (saved) {
+    preview.innerHTML = `<img src="${saved}" alt="avatar">`;
+    btn.style.display = "inline-flex";
+  } else {
+    preview.innerHTML = `<span id="avatarPreviewInitials">${initials}</span>`;
+    btn.style.display = "none";
+  }
+  document.getElementById("photoModal").classList.add("open");
+}
+
+function closePhotoModal() {
+  document.getElementById("photoModal").classList.remove("open");
+  document.getElementById("photoInput").value = "";
+  pendingPhoto = null;
+}
+
+function handlePhotoSelect(e) {
+  const file = e.target.files[0];
+  if (file) processPhotoFile(file);
+}
+
+function processPhotoFile(file) {
+  if (!file.type.startsWith("image/")) { toast("Arquivo inválido.", "err"); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 400;
+      let w = img.width, h = img.height;
+      if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+      else        { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+
+      pendingPhoto = canvas.toDataURL("image/jpeg", 0.82);
+      document.getElementById("avatarPreview").innerHTML = `<img src="${pendingPhoto}" alt="previa">`;
+      document.getElementById("btnRemovePhoto").style.display = "inline-flex";
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function savePhoto() {
+  const name     = localStorage.getItem("clivon_user") || "Professor";
+  const initials = name.split(" ").slice(0,2).map(n=>n[0]).join("").toUpperCase();
+  if (pendingPhoto) {
+    localStorage.setItem(avatarKey(), pendingPhoto);
+    applyAvatarToAll(pendingPhoto, initials);
+    toast("Foto de perfil atualizada!", "ok");
+  }
+  closePhotoModal();
+}
+
+function removePhoto() {
+  const name     = localStorage.getItem("clivon_user") || "Professor";
+  const initials = name.split(" ").slice(0,2).map(n=>n[0]).join("").toUpperCase();
+  localStorage.removeItem(avatarKey());
+  pendingPhoto = null;
+  applyAvatarToAll(null, initials);
+  document.getElementById("avatarPreview").innerHTML = `<span id="avatarPreviewInitials">${initials}</span>`;
+  document.getElementById("btnRemovePhoto").style.display = "none";
+  toast("Foto removida.", "ok");
+  closePhotoModal();
+}
+
+async function loadDashboard() {
+  try {
+    const [statsRes, histRes] = await Promise.all([
+      CONFIG.apiFetch("/dashboard_stats"),
+      CONFIG.apiFetch("/results"),
+    ]);
+
+    let serverData = {};
+    if (statsRes && statsRes.ok) {
+      const stats = await statsRes.json();
+      if (stats.teacher_name) {
+        localStorage.setItem("clivon_user", stats.teacher_name);
+        setUserUI(stats.teacher_name);
+      }
+      stats.subjects.forEach(s => { serverData[s.subject] = s; });
+    }
+    renderSubjects(serverData);
+
+    if (histRes && histRes.ok) allResults = await histRes.json();
+    renderHistory(allResults);
+    renderFilters();
+    if (allResults.length) document.getElementById("btnClear").style.display = "flex";
+
+  } catch {
+    renderSubjects({});
+    document.getElementById("histBody").innerHTML =
+      `<tr class="empty-row"><td colspan="5">Servidor offline.</td></tr>`;
+  }
+}
+
+// Renderiza a Interface Central 
+function renderSubjects(serverData) {
+  const grid = document.getElementById("subjectGrid");
+  grid.innerHTML = SUBJECTS.map(name => {
+    const d        = serverData[name] || {};
+    const hasKey   = !!d.has_answer_key;
+    const scans    = d.scans_done ?? 0;
+    const avg      = d.avg_score ?? null;
+    const avgStr   = avg !== null ? avg.toFixed(1) : "—";
+    const avgCls   = avg !== null && avg >= 7 ? " green" : "";
+    const classLbl = d.class_id ? `Turma ${d.class_id}` : "Sem turma configurada";
+    const subKey   = name.replace(/\s/g, '_');
+
+    const badge = hasKey
+      ? `<span class="badge-key-yes"><i class="ph ph-check" style="font-size:12px;"></i> Gabarito</span>`
+      : `<span class="badge-key-no">Sem gabarito</span>`;
+
+    const exportBlock = hasKey ? `
+    <div class="export-wrap">
+      <button class="btn-export" id="exportBtn_${subKey}" onclick="toggleExport('${subKey}', event)">
+        <span class="btn-export-left"><i class="ph ph-export"></i> Exportar Resultados</span>
+        <i class="ph ph-caret-down"></i>
+      </button>
+      <div class="export-dropdown" id="exportDrop_${subKey}">
+        <button class="export-item" onclick="exportSubject('${name}','csv',event)">
+          <i class="ph ph-table"></i>
+          <span class="export-item-label">Planilha de Notas</span>
+          <span class="export-item-badge">.csv / .xlsx</span>
+        </button>
+        <button class="export-item" onclick="exportSubject('${name}','pdf',event)">
+          <i class="ph ph-file-pdf"></i>
+          <span class="export-item-label">Provas Corrigidas</span>
+          <span class="export-item-badge">.pdf</span>
+        </button>
+        <button class="export-item" onclick="exportSubject('${name}','gabarito',event)">
+          <i class="ph ph-file"></i>
+          <span class="export-item-label">Gabarito em Branco</span>
+        </button>
+      </div>
+    </div>` : "";
+
+    return `
+    <div class="subject-card">
+      <div class="card-top">
+        <div class="card-left">
+          <div class="s-icon">${ICONS[name] || ""}</div>
+          <div class="s-info">
+            <div class="s-name">${name}</div>
+            <div class="s-sub">${classLbl}</div>
+          </div>
+        </div>
+        ${badge}
+      </div>
+      ${exportBlock}
+      <div class="stats-row">
+        <div class="stat-pill">
+          <div class="sv">${scans}</div>
+          <div class="sl">Correções</div>
+        </div>
+        <div class="stat-pill">
+          <div class="sv${avgCls}">${avgStr}</div>
+          <div class="sl">Média</div>
+        </div>
+      </div>
+      
+      <div class="card-btns">
+        <button class="btn-gab" onclick="go('${name}','criar-gabarito.html')">
+          <i class="ph ph-check-circle" style="font-size:14px;"></i> Gabarito
+        </button>
+        <button class="btn-scan" onclick="go('${name}','index.html')">
+          <i class="ph ph-scan"></i> Escanear
+        </button>
+      </div>
+      
+      <button class="btn-chamada" onclick="go('${name}','chamada.html')">
+        <i class="ph ph-users"></i> Fazer Chamada
+      </button>
+
+    </div>`;
+  }).join("");
+}
+
+function renderHistory(results) {
+  const tbody = document.getElementById("histBody");
+  if (!results.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">Nenhuma correção registrada ainda.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = results.slice(0,50).map(r => {
+    const cls  = r.score>=7 ? "td-green" : r.score>=5 ? "td-amber" : "td-red";
+    const date = new Date(r.scanned_at).toLocaleDateString("pt-BR",{
+      day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit"
+    });
+    return `<tr>
+      <td><strong>${r.student_name}</strong></td>
+      <td>${r.subject}</td>
+      <td class="${cls}">${r.score.toFixed(1)}</td>
+      <td>${r.correct} / ${r.correct + r.wrong}</td>
+      <td style="color:var(--text-3)">${date}</td>
+    </tr>`;
+  }).join("");
+}
+
+function renderFilters() {
+  const subjects = [...new Set(allResults.map(r=>r.subject))];
+  const row = document.getElementById("filterRow");
+  row.innerHTML = `<button class="filter-pill fp-blue" data-f="ALL" onclick="setFilter('ALL',this)">Todas</button>`;
+  subjects.forEach(s => {
+    row.innerHTML += `<button class="filter-pill fp-dark" data-f="${s}" onclick="setFilter('${s}',this)">${s}</button>`;
+  });
+}
+
+function setFilter(subject, btn) {
+  activeFilter = subject;
+  document.querySelectorAll(".filter-pill").forEach(b => { b.className = "filter-pill fp-outline"; });
+  btn.className = subject === "ALL" ? "filter-pill fp-blue" : "filter-pill fp-dark";
+  const filtered = subject === "ALL" ? allResults : allResults.filter(r=>r.subject===subject);
+  renderHistory(filtered);
+}
+
+function openClearModal() {
+  closeDropdown();
+  clearTarget = activeFilter;
+  const label = clearTarget === "ALL" ? "todos os registros" : `todos os registros de <strong>${clearTarget}</strong>`;
+  document.getElementById("clearModalText").innerHTML = `Deseja apagar ${label}?<br>Esta ação <strong>não pode ser desfeita</strong>.`;
+  document.getElementById("clearModal").classList.add("open");
+}
+function closeClearModal() { document.getElementById("clearModal").classList.remove("open"); }
+
+async function execClear() {
+  const btn = document.getElementById("btnExecClear");
+  btn.disabled = true; btn.textContent = "Apagando...";
+  try {
+    const res = await CONFIG.apiFetch("/results/clear", {
+      method: "DELETE",
+      body: JSON.stringify({ subject: clearTarget }),
+    });
+    if (!res || !res.ok) throw new Error();
+    allResults = clearTarget === "ALL" ? [] : allResults.filter(r=>r.subject!==clearTarget);
+    closeClearModal();
+    renderHistory(allResults);
+    renderFilters();
+    if (!allResults.length) document.getElementById("btnClear").style.display = "none";
+    toast("Histórico apagado.", "ok");
+    loadDashboard();
+  } catch {
+    toast("Erro ao limpar. Tente novamente.", "err");
+  } finally {
+    btn.disabled = false; btn.textContent = "Apagar";
+  }
+}
+
+["photoModal","clearModal"].forEach(id => {
+  document.getElementById(id).addEventListener("click", e => {
+    if (e.target === e.currentTarget) { id === "photoModal" ? closePhotoModal() : closeClearModal(); }
+  });
+});
+
+function go(subject, page) {
+  sessionStorage.setItem("currentSubject", subject);
+  
+  // Se for página de chamada, também redirecionamos corretamente.
+  window.location.href = page; 
+}
+
+function logout() {
+  if (!confirm("Sair da conta?")) return;
+  localStorage.removeItem("clivon_token");
+  localStorage.removeItem("clivon_user");
+  localStorage.removeItem("clivon_email");
+  window.location.href = "login.html";
+}
+
+function toast(msg, type="") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show" + (type ? " "+type : "");
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove("show"), 2800);
+}
+</script>
+</body>
+</html>

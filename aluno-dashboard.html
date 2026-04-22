@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Clivon Edu — Meu Painel</title>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Estilos Simplificados para o Aluno */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    /* Cards super limpos e amigáveis */
+    .aluno-card {
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .aluno-card h2 {
+      font-size: 18px;
+      color: var(--text-1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--surface-3);
+      padding-bottom: 12px;
+    }
+    .aluno-card h2 i { color: var(--brand); font-size: 24px; }
+
+    /* Lista de Matérias/Notas */
+    .materia-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--surface-3);
+    }
+    .materia-item:last-child { border-bottom: none; }
+    
+    .materia-nome { font-weight: 600; font-size: 15px; color: var(--text-2); }
+    
+    .nota-badge {
+      font-size: 16px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: var(--surface-2);
+    }
+    .nota-boa { background: var(--green-bg); color: #065f46; }
+    .nota-ruim { background: var(--red-bg); color: #991b1b; }
+
+    /* Horário Escolar Simples */
+    .dia-semana {
+      font-weight: 600;
+      color: var(--text-1);
+      margin-top: 16px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .aula-pill {
+      background: var(--brand-light);
+      color: var(--brand-dark);
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+    }
+    .aula-horario { color: var(--brand); font-size: 12px; opacity: 0.8; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="#" class="nav-logo">
+      <img src="/assets/img/logo.svg" alt="Logo" width="90" style="filter: brightness(0) invert(1);">
+    </a>
+    <div class="nav-divider"></div>
+    <div class="nav-context">Portal do Aluno</div>
+    <div class="nav-spacer"></div>
+    <div class="nav-user" onclick="sair()">
+      <div class="nav-avatar" style="background: rgba(255,255,255,0.2);"><i class="ph ph-sign-out" style="font-size: 16px;"></i></div>
+      <div class="nav-user-info">
+        <div id="navName">Carregando...</div>
+        <div class="nav-user-email">Sair da conta</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <h1 id="boasVindas">Olá! 👋</h1>
+      <p>Veja como está o seu progresso escolar.</p>
+    </div>
+
+    <div class="dashboard-grid">
+      
+      <div class="aluno-card">
+        <h2><i class="ph ph-exam"></i> Minhas Notas (Média)</h2>
+        <div id="notasList">
+          <div class="empty">Carregando notas...</div>
+        </div>
+      </div>
+
+      <div class="aluno-card">
+        <h2><i class="ph ph-calendar-x"></i> Minhas Faltas</h2>
+        <div id="faltasList">
+          <div class="empty">Carregando faltas...</div>
+        </div>
+      </div>
+
+      <div class="aluno-card">
+        <h2><i class="ph ph-clock"></i> Horário de Aulas</h2>
+        <div id="horarioList">
+          <div class="empty">Carregando horários...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+  const API_URL = "https://clivon-api.onrender.com";
+    
+    document.addEventListener("DOMContentLoaded", () => {
+      const alunoName = localStorage.getItem("clivon_aluno_name");
+      const alunoId = localStorage.getItem("clivon_aluno_id");
+      
+      if (!alunoId) {
+        window.location.href = "aluno-login.html"; // Se não logou, expulsa
+        return;
+      }
+
+      // Separa o primeiro nome
+      const primeiroNome = alunoName.split(" ")[0];
+      document.getElementById("navName").textContent = alunoName;
+      document.getElementById("boasVindas").textContent = `Olá, ${primeiroNome}! 👋`;
+
+      carregarDados();
+    });
+
+    async function carregarDados() {
+      try {
+        const token = localStorage.getItem("clivon_aluno_token");
+        const res = await fetch(`${API_URL}/aluno/dashboard`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+          if (res.status === 401) { sair(); return; }
+          throw new Error("Erro ao carregar dados");
+        }
+
+        const data = await res.json();
+        renderNotas(data.notas);
+        renderFaltas(data.faltas);
+        renderHorario(data.horario);
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+      }
+    }
+
+    function renderNotas(notas) {
+      const container = document.getElementById("notasList");
+      if (!notas || notas.length === 0) {
+        container.innerHTML = '<div class="empty">Nenhuma nota lançada ainda.</div>';
+        return;
+      }
+
+      container.innerHTML = notas.map(n => {
+        // Se a nota for maior ou igual a 6.0, verde. Senão, vermelho.
+        const classeNota = n.avg_score >= 6.0 ? 'nota-boa' : 'nota-ruim';
+        return `
+          <div class="materia-item">
+            <span class="materia-nome">${n.subject} <span style="font-size: 11px; font-weight: 400; color: var(--text-3);">(Bimestre ${n.bimester})</span></span>
+            <span class="nota-badge ${classeNota}">${n.avg_score.toFixed(1)}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderFaltas(faltas) {
+      const container = document.getElementById("faltasList");
+      if (!faltas || faltas.length === 0) {
+        container.innerHTML = '<div class="empty">Você não tem faltas. Parabéns! 🌟</div>';
+        return;
+      }
+
+      container.innerHTML = faltas.map(f => `
+        <div class="materia-item">
+          <span class="materia-nome">${f.subject}</span>
+          <span class="nota-badge" style="background: var(--surface-2); color: var(--text-2);">
+            ${f.total_absences} falta(s)
+          </span>
+        </div>
+      `).join("");
+    }
+
+    function renderHorario(horario) {
+      const container = document.getElementById("horarioList");
+      if (!horario || horario.length === 0) {
+        container.innerHTML = '<div class="empty">Horário não disponível.</div>';
+        return;
+      }
+
+      const diasDaSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+      
+      // Agrupar por dia da semana
+      const porDia = {};
+      horario.forEach(aula => {
+        if (!porDia[aula.weekday]) porDia[aula.weekday] = [];
+        porDia[aula.weekday].push(aula);
+      });
+
+      let html = "";
+      // Loop apenas nos dias úteis (1 a 5)
+      for (let i = 1; i <= 5; i++) {
+        if (porDia[i]) {
+          html += `<div class="dia-semana">${diasDaSemana[i]}</div>`;
+          porDia[i].forEach(aula => {
+            const inicioFormatado = aula.start_time.substring(0, 5); // Pega só "07:30"
+            html += `
+              <div class="aula-pill">
+                <span>${aula.subject}</span>
+                <span class="aula-horario">${inicioFormatado}</span>
+              </div>
+            `;
+          });
+        }
+      }
+      container.innerHTML = html;
+    }
+
+    function sair() {
+      localStorage.removeItem("clivon_aluno_token");
+      localStorage.removeItem("clivon_aluno_id");
+      localStorage.removeItem("clivon_aluno_name");
+      window.location.href = "aluno-login.html";
+    }
+  </script>
+</body>
+</html>

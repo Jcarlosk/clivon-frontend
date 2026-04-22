@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clivon Edu — Gabarito</title>
+  <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="/assets/img/icon.svg" type="image/png">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    .two-col { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+    @media (max-width: 780px) { .two-col { grid-template-columns: 1fr; } }
+
+    .setup-grid { display: grid; grid-template-columns: 1fr 1fr 120px; gap: 16px; margin-bottom: 20px; }
+    @media (max-width: 600px) { .setup-grid { grid-template-columns: 1fr 1fr; } }
+
+    .q-list { display: flex; flex-direction: column; gap: 6px; max-height: 560px; overflow-y: auto; padding-right: 4px; }
+    .q-list::-webkit-scrollbar { width: 4px; }
+    .q-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .q-row {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 8px 12px; border-radius: var(--radius-md);
+      transition: background .15s;
+    }
+    .q-row:hover { background: var(--surface-3); }
+
+    .q-num {
+      font-size: 12px; font-weight: 600; color: var(--text-3);
+      font-family: var(--mono); width: 28px; flex-shrink: 0;
+    }
+
+    .opts { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .opt-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 1.5px solid var(--border-strong);
+      background: var(--surface); color: var(--text-2);
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s; font-family: var(--font);
+    }
+    .opt-btn:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-light); }
+    .opt-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+    .summary-row { display: flex; justify-content: space-between; font-size: 14px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row span:last-child { font-weight: 600; }
+
+    .progress-bar-wrap { background: var(--surface-3); border-radius: 20px; height: 6px; overflow: hidden; margin: 12px 0; }
+    .progress-bar { height: 100%; background: var(--brand); border-radius: 20px; transition: width .3s; }
+
+    .sticky-panel { position: sticky; top: calc(var(--nav-h) + 20px); }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="dashboard.html">
+ <img src="/assets/img/logo.svg" alt="logo-clivon-edu">
+  </a>
+  <div class="nav-divider"></div>
+  <span class="nav-context" id="navContext">Gabarito</span>
+  <div class="nav-spacer"></div>
+  <div class="nav-user" onclick="window.location.href='dashboard.html'">
+    <div class="nav-avatar" id="navInitials">--</div>
+    <span id="navName">...</span>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-header">
+    <h1>Configurar gabarito oficial</h1>
+    <p>Defina as respostas corretas para a prova. O gabarito fica salvo no servidor.</p>
+  </div>
+
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="setup-grid">
+      <div class="field">
+        <label>Disciplina</label>
+        <input type="text" id="subjectInput" placeholder="Ex: Matemática">
+      </div>
+      <div class="field">
+        <label>Turma</label>
+        <input type="text" id="classInput" placeholder="Ex: 2º Ano B">
+      </div>
+      <div class="field">
+        <label>Questões</label>
+        <input type="number" id="totalInput" value="20" min="1" max="100">
+      </div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="generateGrid()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15A9 9 0 1020.49 9"/></svg>
+      Gerar grade
+    </button>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Marque as respostas corretas</div>
+      <div class="q-list" id="editorGrid">
+        <div class="empty">Configure os campos acima e clique em "Gerar grade".</div>
+      </div>
+    </div>
+
+    <div class="sticky-panel">
+      <div class="card">
+        <div class="card-title">Resumo</div>
+        <div class="summary-row"><span>Disciplina</span><span id="resSubject">—</span></div>
+        <div class="summary-row"><span>Turma</span><span id="resClass">—</span></div>
+        <div class="summary-row"><span>Total de questões</span><span id="resTotal">0</span></div>
+        <div class="summary-row">
+          <span>Preenchidas</span>
+          <span id="resCount" style="color:var(--red)">0</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="progressBar" style="width:0%"></div>
+        </div>
+        <p id="progressLabel" style="font-size:12px;color:var(--text-3);margin-bottom:16px;">0 de 0 questões</p>
+
+        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="saveAnswerKey()" id="saveBtn">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Salvar gabarito
+        </button>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="window.location.href='dashboard.html'">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script>
+  let answerKey = [];
+
+  // Guard
+  if (!CONFIG.getToken()) window.location.href = "login.html";
+
+  // Setup user info
+  const userName = localStorage.getItem("clivon_user") || "Professor";
+  document.getElementById("navName").textContent = userName;
+  document.getElementById("navInitials").textContent = userName.split(" ").slice(0,2).map(n=>n[0]).join("").toUpperCase();
+
+  // Auto-fill subject from session
+  window.addEventListener("DOMContentLoaded", () => {
+    const saved = sessionStorage.getItem("currentSubject");
+    if (saved) {
+      document.getElementById("subjectInput").value = saved;
+      document.getElementById("subjectInput").readOnly = true;
+      document.getElementById("navContext").textContent = `Gabarito · ${saved}`;
+    }
+    generateGrid();
+    updateSummary();
+  });
+
+  function generateGrid() {
+    const total = parseInt(document.getElementById("totalInput").value) || 20;
+    answerKey = Array(total).fill(null);
+    document.getElementById("resTotal").textContent = total;
+
+    const grid = document.getElementById("editorGrid");
+    grid.innerHTML = "";
+    const options = ["A", "B", "C", "D", "E"];
+
+    for (let i = 0; i < total; i++) {
+      const row = document.createElement("div");
+      row.className = "q-row";
+
+      const num = document.createElement("div");
+      num.className = "q-num";
+      num.textContent = String(i + 1).padStart(2, "0");
+
+      const opts = document.createElement("div");
+      opts.className = "opts";
+
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "opt-btn";
+        btn.textContent = opt;
+        btn.onclick = () => {
+          opts.querySelectorAll(".opt-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          answerKey[i] = opt;
+          updateSummary();
+        };
+        opts.appendChild(btn);
+      });
+
+      row.appendChild(num);
+      row.appendChild(opts);
+      grid.appendChild(row);
+    }
+    updateSummary();
+  }
+
+  function updateSummary() {
+    const subject = document.getElementById("subjectInput").value || "—";
+    const cls = document.getElementById("classInput").value || "—";
+    const done = answerKey.filter(a => a !== null).length;
+    const total = answerKey.length;
+
+    document.getElementById("resSubject").textContent = subject;
+    document.getElementById("resClass").textContent = cls;
+    document.getElementById("resCount").textContent = done;
+    document.getElementById("resCount").style.color = done === total && total > 0 ? "var(--green)" : "var(--red)";
+    document.getElementById("progressBar").style.width = total ? `${(done/total)*100}%` : "0%";
+    document.getElementById("progressLabel").textContent = `${done} de ${total} questões`;
+  }
+
+  async function saveAnswerKey() {
+    const subject = document.getElementById("subjectInput").value.trim();
+    const classId = document.getElementById("classInput").value.trim();
+
+    if (!subject) { showToast("Informe a disciplina.", true); return; }
+    if (!classId)  { showToast("Informe a turma.", true); return; }
+    if (answerKey.includes(null)) { showToast("Preencha todas as respostas.", true); return; }
+
+    const btn = document.getElementById("saveBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Salvando...';
+
+    try {
+      const res = await CONFIG.apiFetch("/save_answer_key", {
+        method: "POST",
+        body: JSON.stringify({
+          subject,
+          class_id: classId,
+          total_questions: answerKey.length,
+          answers: answerKey,
+        }),
+      });
+
+      if (!res) return; // redirecionado pelo auth
+      if (!res.ok) throw new Error(await res.text());
+
+      showToast("Gabarito salvo com sucesso!", false, true);
+      setTimeout(() => window.location.href = "dashboard.html", 1200);
+    } catch (err) {
+      showToast("Erro ao salvar. Verifique o servidor.", true);
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/></svg> Salvar gabarito`;
+    }
+  }
+
+  document.getElementById("subjectInput").addEventListener("input", updateSummary);
+  document.getElementById("classInput").addEventListener("input", updateSummary);
+
+  function showToast(msg, isError = false, isSuccess = false) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = "toast show" + (isError ? " error" : isSuccess ? " success" : "");
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.classList.remove("show"), 2800);
+  }
+</script>
+</body>
+</html>

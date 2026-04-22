@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clivon Edu — Entrar</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="/assets/img/icon.svg" type="image/png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-main: #2D54E8;
+      --blue-dark: #1A3BC4;
+      --blue-light: #4A6FF0;
+      --text-dark: #0F1B3D;
+      --text-mid: #4A5568;
+      --text-light: #A0AEC0;
+      --border: #E2E8F0;
+      --white: #FFFFFF;
+      --font: 'DM Sans', sans-serif;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      background: var(--white);
+      overflow: hidden;
+    }
+
+    /* ── LEFT PANEL ── */
+    .left {
+      width: 50%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px 52px;
+      overflow: hidden;
+      z-index: 1;
+      background: linear-gradient(135deg, #1E40AF 0%, #2563EB 100%);
+    }
+
+ /* 2. A Camada da Imagem (A Mágica) */
+.left::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  
+  /* Coloque o caminho da imagem que você exportou aqui */
+  background-image: url('/assets/img/linha.svg'); 
+  background-size: cover; /* Faz a imagem preencher toda a tela */
+  background-position: center; /* Centraliza a imagem. Se quiser mais pra baixo, use 'bottom left' */
+  background-repeat: no-repeat;
+  
+  z-index: -1; /* JOGA A IMAGEM PARA TRÁS DO TEXTO! Super importante. */
+  
+  /* AJUSTE FINO DE DESIGNER: */
+  /* Se você exportou a imagem branca e ela ficou muito forte, baixe a opacidade aqui: */
+  opacity: 0.35; 
+  pointer-events: none; /* Para o mouse ignorar a imagem */
+}
+
+    .left-top {
+      position: relative;
+      z-index: 2;
+    }
+
+    .left-logo {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .left-logo svg { opacity: 0.9; }
+
+    .left-body {
+      position: relative;
+      z-index: 2;
+      
+    }
+
+    .wave-emoji {
+      font-size: 52px;
+      display: block;
+      margin-bottom: 16px;
+      animation: wave 2.2s ease-in-out infinite;
+      transform-origin: 70% 70%;
+      color: var(--white);
+    }
+
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      15%       { transform: rotate(18deg); }
+      30%       { transform: rotate(-10deg); }
+      45%       { transform: rotate(14deg); }
+      60%       { transform: rotate(-6deg); }
+      75%       { transform: rotate(10deg); }
+    }
+
+    .left-headline {
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+    }
+
+    .left-sub {
+      font-size: 15px;
+      color: rgba(255,255,255,0.78);
+      line-height: 1.65;
+      max-width: 340px;
+      margin-bottom: 8rem;
+    }
+    .left-sub strong {
+      color: var(--white);
+      font-weight: 600;
+    }
+
+    .left-footer {
+      position: relative;
+      z-index: 2;
+      font-size: 13px;
+      color: var(--white);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── RIGHT PANEL ── */
+    .right {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 72px;
+      background: var(--white);
+    }
+
+    .right-inner {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    /* Logo direito */
+    .right-logo {
+      width: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      margin-bottom: 52px;
+}
+
+
+ .right-logo img {
+  width: 100px;
+ }
+    .right-logo-mark {
+      display: flex; align-items: center; gap: 8px;
+    }
+   
+
+    /* Headings */
+    .form-area {
+      animation: fadeUp 0.5s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .area-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 14px;
+    }
+
+    .form-headline {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text-dark);
+      line-height: 1.3;
+      margin-bottom: 36px;
+      letter-spacing: -0.3px;
+    }
+
+    /* Fields */
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 20px;
+    }
+    .field label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-dark);
+    }
+    .field input {
+      height: 52px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0 16px;
+      font-size: 15px;
+      font-family: var(--font);
+      color: var(--text-dark);
+      background: var(--white);
+      transition: border-color 0.18s, box-shadow 0.18s;
+      outline: none;
+    }
+    .field input::placeholder { color: var(--text-light); }
+    .field input:focus {
+      border-color: var(--blue-main);
+      box-shadow: 0 0 0 4px rgba(45, 84, 232, 0.10);
+    }
+
+    /* Button */
+    .btn-entrar {
+      width: 100%;
+      height: 52px;
+      background: var(--blue-main);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--font);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      margin-top: 8px;
+      margin-bottom: 24px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+      box-shadow: 0 4px 20px rgba(45, 84, 232, 0.30);
+    }
+    .btn-entrar:hover {
+      background: var(--blue-dark);
+      box-shadow: 0 6px 24px rgba(45, 84, 232, 0.40);
+      transform: translateY(-1px);
+    }
+    .btn-entrar:active { transform: translateY(0); }
+    .btn-entrar:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Footer link */
+    .form-footer {
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-mid);
+    }
+    .form-footer a {
+      color: var(--blue-main);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .form-footer a:hover { text-decoration: underline; }
+    .info-icon {
+      display: inline-block;
+      width: 16px; height: 16px;
+      background: var(--blue-main);
+      border-radius: 50%;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 16px;
+      text-align: center;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: var(--text-dark);
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-family: var(--font);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s, transform 0.22s;
+      white-space: nowrap;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { background: #C53030; }
+    .toast.success { background: #276749; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body { flex-direction: column; overflow: auto; }
+      .left { width: 100%; min-height: 240px; padding: 40px 32px; }
+      .left-headline { font-size: 28px; }
+      .right { width: 100%; padding: 48px 32px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LEFT -->
+<div class="left">
+  <div class="circle-extra"></div>
+
+  <div class="left-top">
+    <div class="left-logo">
+   
+    </div>
+  </div>
+
+  <div class="left-body">
+    <span class="wave-emoji"><i class="ph ph-hand-waving"></i></span>
+    <h1 class="left-headline">Olá, Professor!</h1>
+    <p class="left-sub">
+      O <strong>Clivon Edu</strong> automatiza suas correções em
+      segundos para você focar no que realmente importa: seus alunos
+    </p>
+  </div>
+
+  <div class="left-footer">Powered by Clivon</div>
+</div>
+
+<!-- RIGHT -->
+<div class="right">
+  <div class="right-inner">
+
+    <div class="right-logo">
+      <div class="right-logo-mark">
+      <img src="/assets/img/logo-black.svg" alt="">
+      </div>
+    </div>
+
+    <div class="form-area">
+      <p class="area-label">Área do Professor</p>
+      <h2 class="form-headline">Entre com suas credenciais para acessar o painel.</h2>
+
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" placeholder="leticia@escola.edu.br" autocomplete="email">
+      </div>
+
+      <div class="field">
+        <label for="password">Senha</label>
+        <input type="password" id="password" placeholder="••••••••••" autocomplete="current-password">
+      </div>
+
+      <button class="btn-entrar" id="loginBtn" onclick="doLogin()">
+        Entrar
+      </button>
+
+      <p class="form-footer">
+        <span class="info-icon">i</span>
+        <a href="#">Esqueceu sua senha?</a> Fale com suporte
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  document.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+
+  async function doLogin() {
+    const btn = document.getElementById("loginBtn");
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!email) { showToast("Informe o e-mail.", true); return; }
+    if (!password) { showToast("Informe a senha.", true); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Entrando...';
+
+    try {
+   const res = await fetch("https://clivon-api.onrender.com/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) throw new Error("Credenciais inválidas. Tente novamente.");
+      const data = await res.json();
+
+      localStorage.setItem("clivon_token", data.access_token);
+      localStorage.setItem("clivon_user", data.name);
+      // 👇 Linha adicionada para salvar o e-mail corretamente 👇
+      localStorage.setItem("clivon_email", email); 
+
+      showToast("Bem-vindo de volta!", false, true);
+      setTimeout(() => window.location.href = "dashboard.html", 900);
+    } catch (err) {
+      showToast(err.message || "Erro ao conectar ao servidor.", true);
+      btn.disabled = false;
+      btn.innerHTML = "Entrar";
+    }
+  }
+  function showToast(msg, isError = false, isSuccess = false) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = "toast show" + (isError ? " error" : isSuccess ? " success" : "");
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.classList.remove("show"), 2800);
+  }
+</script>
+</body>
+</html>

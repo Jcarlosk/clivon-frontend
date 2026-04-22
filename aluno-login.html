@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clivon Edu — Área do Aluno</title>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/assets/img/icon.svg" type="image/png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --blue-main: #2D54E8; --blue-dark: #1A3BC4; --text-dark: #0F1B3D; --text-mid: #4A5568; --text-light: #A0AEC0; --border: #E2E8F0; --white: #FFFFFF; --font: 'DM Sans', sans-serif; --radius: 12px; }
+    body { font-family: var(--font); min-height: 100vh; display: flex; background: var(--white); overflow: hidden; }
+    .left { width: 50%; position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 48px 52px; overflow: hidden; z-index: 1; background: linear-gradient(135deg, #1E40AF 0%, #2563EB 100%); }
+    .left::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('/assets/img/linha.svg'); background-size: cover; background-position: center; opacity: 0.35; z-index: -1; pointer-events: none; }
+    .left-body { position: relative; z-index: 2; }
+    .wave-emoji { font-size: 52px; display: block; margin-bottom: 16px; animation: wave 2.2s ease-in-out infinite; transform-origin: 70% 70%; color: var(--white); }
+    @keyframes wave { 0%, 100% { transform: rotate(0deg); } 15% { transform: rotate(18deg); } 30% { transform: rotate(-10deg); } 45% { transform: rotate(14deg); } 60% { transform: rotate(-6deg); } 75% { transform: rotate(10deg); } }
+    .left-headline { font-size: 38px; font-weight: 700; color: var(--white); line-height: 1.15; letter-spacing: -0.5px; }
+    .left-sub { font-size: 15px; color: rgba(255,255,255,0.78); line-height: 1.65; max-width: 340px; margin-bottom: 8rem; }
+    .left-sub strong { color: var(--white); font-weight: 600; }
+    .left-footer { position: relative; z-index: 2; font-size: 13px; color: var(--white); letter-spacing: 0.02em; }
+    .right { width: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 72px; background: var(--white); }
+    .right-inner { width: 100%; max-width: 400px; }
+    .right-logo { width: 100px; margin-bottom: 52px; }
+    .right-logo img { width: 100px; }
+    .form-area { animation: fadeUp 0.5s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .area-label { font-size: 14px; font-weight: 500; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    .form-headline { font-size: 26px; font-weight: 600; color: var(--text-dark); line-height: 1.3; margin-bottom: 36px; letter-spacing: -0.3px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 20px; }
+    .field label { font-size: 14px; font-weight: 500; color: var(--text-dark); }
+    .field input { height: 52px; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 0 16px; font-size: 15px; font-family: var(--font); color: var(--text-dark); outline: none; transition: 0.2s; }
+    .field input:focus { border-color: var(--blue-main); box-shadow: 0 0 0 4px rgba(45, 84, 232, 0.10); }
+    .btn-entrar { width: 100%; height: 52px; background: var(--blue-main); color: var(--white); border: none; border-radius: var(--radius); font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px; margin-bottom: 24px; transition: 0.2s; }
+    .btn-entrar:hover { background: var(--blue-dark); transform: translateY(-1px); }
+    .form-footer { text-align: center; font-size: 14px; color: var(--text-mid); }
+    .form-footer a { color: var(--blue-main); text-decoration: none; font-weight: 500; }
+    .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--text-dark); color: #fff; padding: 12px 22px; border-radius: 100px; font-size: 14px; opacity: 0; transition: 0.3s; z-index: 999; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { background: #C53030; }
+    .toast.success { background: #276749; }
+    @media (max-width: 768px) { body { flex-direction: column; overflow: auto; } .left, .right { width: 100%; padding: 40px 32px; } }
+  </style>
+</head>
+<body>
+
+<div class="left">
+  <div class="left-top"></div>
+  <div class="left-body">
+    <span class="wave-emoji"><i class="ph ph-student"></i></span>
+    <h1 class="left-headline">Olá, Aluno(a)!</h1>
+    <p class="left-sub">
+      Acompanhe suas <strong>notas, faltas e horários</strong> de forma simples e rápida no Clivon Edu.
+    </p>
+  </div>
+  <div class="left-footer">Powered by Clivon</div>
+</div>
+
+<div class="right">
+  <div class="right-inner">
+    <div class="right-logo">
+      <img src="/assets/img/logo-black.svg" alt="Clivon Logo">
+    </div>
+
+    <div class="form-area">
+      <p class="area-label">Portal do Aluno</p>
+      <h2 class="form-headline">Acesse com sua matrícula e senha.</h2>
+
+      <div class="field">
+        <label for="school_code">Código da Escola</label>
+        <input type="text" id="school_code" placeholder="Ex: ESC001" autocomplete="organization">
+      </div>
+
+      <div class="field">
+        <label for="enrollment">Número de Matrícula</label>
+        <input type="text" id="enrollment" placeholder="Ex: 20250001" autocomplete="username">
+      </div>
+
+      <div class="field">
+        <label for="password">Senha</label>
+        <input type="password" id="password" placeholder="••••••••••" autocomplete="current-password">
+      </div>
+
+      <button class="btn-entrar" id="loginBtn" onclick="doLogin()">Entrar na minha conta</button>
+
+      <p class="form-footer">
+        Esqueceu a senha? <a href="#">Fale com seu professor</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  document.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+
+  async function doLogin() {
+    const btn = document.getElementById("loginBtn");
+    const school_code = document.getElementById("school_code").value.trim();
+    const enrollment = document.getElementById("enrollment").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!school_code || !enrollment || !password) { 
+      showToast("Preencha todos os campos.", true); 
+      return; 
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = 'Entrando...';
+
+    try {
+    const res = await fetch("https://clivon-api.onrender.com/aluno/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enrollment, password, school_code }),
+      });
+
+      if (!res.ok) throw new Error("Matrícula ou senha incorretos.");
+      const data = await res.json();
+
+      // Salva os dados no navegador exatamente como o teu código pedia
+      localStorage.setItem("clivon_aluno_token", data.access_token);
+      localStorage.setItem("clivon_aluno_id", data.class_id);
+      localStorage.setItem("clivon_aluno_name", data.name);
+
+      showToast("Tudo certo! Redirecionando...", false, true);
+      setTimeout(() => window.location.href = "aluno-dashboard.html", 900);
+    } catch (err) {
+      showToast(err.message, true);
+      btn.disabled = false;
+      btn.innerHTML = "Entrar na minha conta";
+    }
+  }
+
+  function showToast(msg, isError = false, isSuccess = false) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = "toast show" + (isError ? " error" : isSuccess ? " success" : "");
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.classList.remove("show"), 2800);
+  }
+</script>
+</body>
+</html>
