@@ -2,11 +2,13 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="description" content="Configure o gabarito oficial da prova no Clivon Edu.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clivon Edu — Gabarito</title>
   <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="/assets/img/icon.svg" type="image/png">
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="preconnect" href="https://unpkg.com">
+  <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
   <style>
     .two-col { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
     @media (max-width: 780px) { .two-col { grid-template-columns: 1fr; } }
@@ -58,7 +60,7 @@
 
 <nav class="nav">
   <a class="nav-logo" href="dashboard.html">
- <img src="/assets/img/logo.svg" alt="logo-clivon-edu">
+ <img src="/assets/img/logo.svg" fetchpriority="high" alt="logo-clivon-edu">
   </a>
   <div class="nav-divider"></div>
   <span class="nav-context" id="navContext">Gabarito</span>

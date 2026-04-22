@@ -1,14 +1,17 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="description" content="Painel do professor Clivon Edu. Gerencie turmas, provas e resultados.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clivon Edu — Painel</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="icon" href="/assets/img/icon.svg" type="image/png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
+  <link rel="preconnect" href="https://unpkg.com">
+  <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
   
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -403,7 +406,7 @@
   <a class="nav-logo" href="dashboard.html">
     <div>
       <div class="nav-logo-mark">
-        <img src="/assets/img/logo.svg" alt="logo-clivon">
+        <img src="/assets/img/logo.svg" fetchpriority="high" alt="logo-clivon">
       </div>
     </div>
   </a>
