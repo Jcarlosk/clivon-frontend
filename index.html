@@ -341,6 +341,92 @@ window.addEventListener("DOMContentLoaded", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 // Câmera
 // ═══════════════════════════════════════════════════════════════════════════
+// ── AUTO-SCAN ────────────────────────────────────────────────────────────────
+let _autoScanRaf   = null;
+let _autoScanCount = 0;
+let _autoScanLast  = 0;
+let _autoScanBusy  = false;
+const AUTO_STABLE_NEEDED = 8;   // frames estáveis para disparar
+const AUTO_FPS           = 6;   // frames por segundo analisados
+const AUTO_COOLDOWN      = 5000;// ms mínimos entre capturas
+let _lastAutoCapture = 0;
+
+function _startAutoScan() {
+  _autoScanCount = 0;
+  _autoScanBusy  = false;
+  _autoScanRaf   = requestAnimationFrame(_autoScanLoop);
+}
+
+function _stopAutoScan() {
+  if (_autoScanRaf) { cancelAnimationFrame(_autoScanRaf); _autoScanRaf = null; }
+}
+
+function _autoScanLoop(ts) {
+  if (!stream) return;
+  _autoScanRaf = requestAnimationFrame(_autoScanLoop);
+  if (_autoScanBusy) return;
+  if (ts - _autoScanLast < 1000 / AUTO_FPS) return;
+  if (ts - _lastAutoCapture < AUTO_COOLDOWN) return;
+  _autoScanLast = ts;
+
+  const video = document.getElementById("cameraFeed");
+  if (!video || video.readyState < 2) return;
+
+  // ── análise rápida: brilho + nitidez numa canvas pequena ──
+  const W = 320, H = Math.round((video.videoHeight / video.videoWidth) * 320) || 240;
+  const oc  = document.createElement("canvas");
+  oc.width = W; oc.height = H;
+  const ctx = oc.getContext("2d", { willReadFrequently: true });
+  ctx.drawImage(video, 0, 0, W, H);
+
+  const px = ctx.getImageData(0, 0, W, H).data;
+  let bright = 0;
+  const total = W * H;
+  for (let i = 0; i < px.length; i += 16) {
+    if ((px[i] + px[i+1] + px[i+2]) / 3 > 110) bright++;
+  }
+  const paperRatio = bright / (total / 4);
+
+  // nitidez (variância numa amostra central 80×80)
+  const sx = Math.floor(W/2)-40, sy = Math.floor(H/2)-40;
+  const sp = ctx.getImageData(sx, sy, 80, 80).data;
+  let sum = 0, sumSq = 0, n = 0;
+  for (let i = 0; i < sp.length; i += 4) {
+    const lum = 0.299*sp[i] + 0.587*sp[i+1] + 0.114*sp[i+2];
+    sum += lum; sumSq += lum*lum; n++;
+  }
+  const sharpness = (sumSq/n) - (sum/n)**2;
+
+  const ok = paperRatio > 0.12 && sharpness > 60;
+
+  if (ok) {
+    _autoScanCount++;
+    const pct = Math.round((_autoScanCount / AUTO_STABLE_NEEDED) * 100);
+    setStatus("scan", `A detetar folha… ${pct}%`);
+    if (_autoScanCount >= AUTO_STABLE_NEEDED) {
+      _autoScanCount = 0;
+      _lastAutoCapture = ts;
+      _autoCapture();
+    }
+  } else {
+    _autoScanCount = Math.max(0, _autoScanCount - 1);
+    if (_autoScanCount === 0) setStatus("ready", "Aponte para o gabarito");
+  }
+}
+
+function _autoCapture() {
+  _autoScanBusy = true;
+  const video = document.getElementById("cameraFeed");
+  const c = document.getElementById("captureCanvas");
+  c.width  = video.videoWidth;
+  c.height = video.videoHeight;
+  c.getContext("2d").drawImage(video, 0, 0);
+  const dataUrl = c.toDataURL("image/jpeg", 0.92);
+  showImagePreview(dataUrl);
+  processImage(dataUrl.split(",")[1]);
+}
+// ── FIM AUTO-SCAN ─────────────────────────────────────────────────────────────
+
 async function startCamera() {
   try {
     stream = await navigator.mediaDevices.getUserMedia({
@@ -351,8 +437,10 @@ async function startCamera() {
     v.style.display = "block";
     document.getElementById("placeholder").style.display = "none";
     document.getElementById("btnCamera").style.display  = "none";
+    // Botão capturar fica visível como fallback manual
     document.getElementById("btnCapture").style.display = "inline-flex";
-    setStatus("ready", "Câmera ativa");
+    setStatus("ready", "Aponte para o gabarito");
+    _startAutoScan(); // ← inicia deteção automática
   } catch(err) {
     const msg = err.name === "NotAllowedError"
       ? "Permissão negada. Use o upload abaixo." : "Câmera indisponível. Use o upload.";
@@ -386,6 +474,7 @@ function handleUpload(e) {
 }
 
 function showImagePreview(dataUrl) {
+  _stopAutoScan();
   const preview = document.getElementById("previewImg");
   const video   = document.getElementById("cameraFeed");
   preview.src     = dataUrl;
@@ -472,6 +561,7 @@ async function processImage(base64) {
     setStatus("", err.message);
     showToast(err.message, true);
     setPhase("idle");
+    _autoScanBusy = false; // libera para tentar novamente
   } finally {
     document.getElementById("loadingOverlay").classList.remove("active");
   }
@@ -724,6 +814,7 @@ function setPhase(phase) {
 }
 
 function resetAll() {
+  _stopAutoScan();
   if (stream) { stream.getTracks().forEach(t=>t.stop()); stream=null; }
   ["cameraFeed","previewImg","debugImg"].forEach(id => {
     const el = document.getElementById(id);
