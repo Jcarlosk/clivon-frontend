@@ -7,15 +7,12 @@
   <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* Estilos Simplificados para o Aluno */
     .dashboard-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 24px;
       margin-top: 20px;
     }
-
-    /* Cards super limpos e amigáveis */
     .aluno-card {
       background: var(--surface);
       border-radius: var(--radius-xl);
@@ -35,7 +32,6 @@
     }
     .aluno-card h2 i { color: var(--brand); font-size: 24px; }
 
-    /* Lista de Matérias/Notas */
     .materia-item {
       display: flex;
       justify-content: space-between;
@@ -44,9 +40,7 @@
       border-bottom: 1px solid var(--surface-3);
     }
     .materia-item:last-child { border-bottom: none; }
-    
     .materia-nome { font-weight: 600; font-size: 15px; color: var(--text-2); }
-    
     .nota-badge {
       font-size: 16px;
       font-weight: 700;
@@ -57,7 +51,6 @@
     .nota-boa { background: var(--green-bg); color: #065f46; }
     .nota-ruim { background: var(--red-bg); color: #991b1b; }
 
-    /* Horário Escolar Simples */
     .dia-semana {
       font-weight: 600;
       color: var(--text-1);
@@ -79,6 +72,14 @@
       justify-content: space-between;
     }
     .aula-horario { color: var(--brand); font-size: 12px; opacity: 0.8; }
+
+    /* Info card da turma */
+    .turma-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--brand-light); color: var(--brand-dark);
+      font-size: 12px; font-weight: 600;
+      padding: 4px 10px; border-radius: 20px; margin-bottom: 24px;
+    }
   </style>
 </head>
 <body>
@@ -102,11 +103,10 @@
   <div class="page-wrap">
     <div class="page-header">
       <h1 id="boasVindas">Olá! 👋</h1>
-      <p>Veja como está o seu progresso escolar.</p>
+      <p id="subInfo">Veja como está o seu progresso escolar.</p>
     </div>
 
     <div class="dashboard-grid">
-      
       <div class="aluno-card">
         <h2><i class="ph ph-exam"></i> Minhas Notas (Média)</h2>
         <div id="notasList">
@@ -127,35 +127,46 @@
           <div class="empty">Carregando horários...</div>
         </div>
       </div>
-
     </div>
   </div>
 
   <script>
-  const API_URL = "https://clivon-api.onrender.com";
-    
+    const API_URL = "https://clivon-api.onrender.com";
+
     document.addEventListener("DOMContentLoaded", () => {
-      const alunoName = localStorage.getItem("clivon_aluno_name");
-      const alunoId = localStorage.getItem("clivon_aluno_id");
-      
-      if (!alunoId) {
-        window.location.href = "aluno-login.html"; // Se não logou, expulsa
+      // CORRIGIDO: lê student_id e class_id separados
+      const alunoName    = localStorage.getItem("clivon_aluno_name");
+      const studentId    = localStorage.getItem("clivon_aluno_student_id");
+      const classId      = localStorage.getItem("clivon_aluno_class_id");
+      const enrollment   = localStorage.getItem("clivon_aluno_enrollment");
+
+      // CORRIGIDO: redireciona para Login.html (maiúsculo, igual ao arquivo)
+      if (!studentId || !classId) {
+        window.location.href = "Login.html";
         return;
       }
 
-      // Separa o primeiro nome
-      const primeiroNome = alunoName.split(" ")[0];
-      document.getElementById("navName").textContent = alunoName;
+      const primeiroNome = (alunoName || "Aluno").split(" ")[0];
+      document.getElementById("navName").textContent    = alunoName || "Aluno";
       document.getElementById("boasVindas").textContent = `Olá, ${primeiroNome}! 👋`;
 
-      carregarDados();
+      // Mostra matrícula no subtítulo
+      if (enrollment) {
+        document.getElementById("subInfo").textContent =
+          `Matrícula ${enrollment} — veja seu progresso escolar.`;
+      }
+
+      carregarDados(studentId, classId);
     });
 
-    async function carregarDados() {
+    async function carregarDados(studentId, classId) {
       try {
-        const token = localStorage.getItem("clivon_aluno_token");
+        // Envia student_id e class_id no header para o backend identificar o aluno
         const res = await fetch(`${API_URL}/aluno/dashboard`, {
-          headers: { "Authorization": `Bearer ${token}` }
+          headers: {
+            "x-student-id": studentId,
+            "x-class-id":   classId
+          }
         });
 
         if (!res.ok) {
@@ -169,6 +180,9 @@
         renderHorario(data.horario);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
+        document.getElementById("notasList").innerHTML  = '<div class="empty">Erro ao carregar. Tente novamente.</div>';
+        document.getElementById("faltasList").innerHTML = '<div class="empty">Erro ao carregar.</div>';
+        document.getElementById("horarioList").innerHTML = '<div class="empty">Erro ao carregar.</div>';
       }
     }
 
@@ -178,16 +192,15 @@
         container.innerHTML = '<div class="empty">Nenhuma nota lançada ainda.</div>';
         return;
       }
-
       container.innerHTML = notas.map(n => {
-        // Se a nota for maior ou igual a 6.0, verde. Senão, vermelho.
         const classeNota = n.avg_score >= 6.0 ? 'nota-boa' : 'nota-ruim';
         return `
           <div class="materia-item">
-            <span class="materia-nome">${n.subject} <span style="font-size: 11px; font-weight: 400; color: var(--text-3);">(Bimestre ${n.bimester})</span></span>
+            <span class="materia-nome">${n.subject}
+              <span style="font-size: 11px; font-weight: 400; color: var(--text-3);">(Bimestre ${n.bimester})</span>
+            </span>
             <span class="nota-badge ${classeNota}">${n.avg_score.toFixed(1)}</span>
-          </div>
-        `;
+          </div>`;
       }).join("");
     }
 
@@ -197,15 +210,13 @@
         container.innerHTML = '<div class="empty">Você não tem faltas. Parabéns! 🌟</div>';
         return;
       }
-
       container.innerHTML = faltas.map(f => `
         <div class="materia-item">
           <span class="materia-nome">${f.subject}</span>
           <span class="nota-badge" style="background: var(--surface-2); color: var(--text-2);">
             ${f.total_absences} falta(s)
           </span>
-        </div>
-      `).join("");
+        </div>`).join("");
     }
 
     function renderHorario(horario) {
@@ -214,29 +225,23 @@
         container.innerHTML = '<div class="empty">Horário não disponível.</div>';
         return;
       }
-
-      const diasDaSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
-      
-      // Agrupar por dia da semana
+      const diasDaSemana = ["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
       const porDia = {};
       horario.forEach(aula => {
         if (!porDia[aula.weekday]) porDia[aula.weekday] = [];
         porDia[aula.weekday].push(aula);
       });
-
       let html = "";
-      // Loop apenas nos dias úteis (1 a 5)
       for (let i = 1; i <= 5; i++) {
         if (porDia[i]) {
           html += `<div class="dia-semana">${diasDaSemana[i]}</div>`;
           porDia[i].forEach(aula => {
-            const inicioFormatado = aula.start_time.substring(0, 5); // Pega só "07:30"
+            const inicio = aula.start_time.substring(0, 5);
             html += `
               <div class="aula-pill">
                 <span>${aula.subject}</span>
-                <span class="aula-horario">${inicioFormatado}</span>
-              </div>
-            `;
+                <span class="aula-horario">${inicio}</span>
+              </div>`;
           });
         }
       }
@@ -244,10 +249,12 @@
     }
 
     function sair() {
-      localStorage.removeItem("clivon_aluno_token");
-      localStorage.removeItem("clivon_aluno_id");
+      // CORRIGIDO: limpa as chaves certas e redireciona para Login.html
+      localStorage.removeItem("clivon_aluno_student_id");
+      localStorage.removeItem("clivon_aluno_class_id");
       localStorage.removeItem("clivon_aluno_name");
-      window.location.href = "aluno-login.html";
+      localStorage.removeItem("clivon_aluno_enrollment");
+      window.location.href = "Login.html";
     }
   </script>
 </body>

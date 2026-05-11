@@ -6,13 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clivon Edu — Gabarito</title>
   <link rel="stylesheet" href="css/style.css">
-    <link rel="icon" href="/assets/img/icon.svg" type="image/png">
+  <link rel="icon" href="/assets/img/icon.svg" type="image/png">
   <link rel="preconnect" href="https://unpkg.com">
   <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
   <style>
     .two-col { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
     @media (max-width: 780px) { .two-col { grid-template-columns: 1fr; } }
 
+    /* CORRIGIDO: 3 colunas — disciplina (select), turma (select), questões */
     .setup-grid { display: grid; grid-template-columns: 1fr 1fr 120px; gap: 16px; margin-bottom: 20px; }
     @media (max-width: 600px) { .setup-grid { grid-template-columns: 1fr 1fr; } }
 
@@ -27,12 +32,7 @@
       transition: background .15s;
     }
     .q-row:hover { background: var(--surface-3); }
-
-    .q-num {
-      font-size: 12px; font-weight: 600; color: var(--text-3);
-      font-family: var(--mono); width: 28px; flex-shrink: 0;
-    }
-
+    .q-num { font-size: 12px; font-weight: 600; color: var(--text-3); font-family: var(--mono); width: 28px; flex-shrink: 0; }
     .opts { display: flex; gap: 6px; flex-wrap: wrap; }
 
     .opt-btn {
@@ -54,13 +54,24 @@
     .progress-bar { height: 100%; background: var(--brand); border-radius: 20px; transition: width .3s; }
 
     .sticky-panel { position: sticky; top: calc(var(--nav-h) + 20px); }
+
+    /* Estilo do select igual ao input */
+    select {
+      width: 100%; height: 42px; padding: 0 14px;
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      font-family: var(--font); font-size: 14px;
+      color: var(--text-1); background: var(--surface);
+      transition: all .15s; outline: none; cursor: pointer;
+    }
+    select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.1); }
+    select:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
 
 <nav class="nav">
   <a class="nav-logo" href="dashboard.html">
- <img src="/assets/img/logo.svg" fetchpriority="high" alt="logo-clivon-edu">
+    <img src="/assets/img/logo.svg" fetchpriority="high" alt="logo-clivon-edu">
   </a>
   <div class="nav-divider"></div>
   <span class="nav-context" id="navContext">Gabarito</span>
@@ -74,19 +85,28 @@
 <div class="page-wrap">
   <div class="page-header">
     <h1>Configurar gabarito oficial</h1>
-    <p>Defina as respostas corretas para a prova. O gabarito fica salvo no servidor.</p>
+    <p>Selecione a disciplina e a turma, depois marque as respostas corretas.</p>
   </div>
 
   <div class="card" style="margin-bottom: 24px;">
     <div class="setup-grid">
+
+      <!-- CORRIGIDO: select de disciplina carregado do Supabase -->
       <div class="field">
         <label>Disciplina</label>
-        <input type="text" id="subjectInput" placeholder="Ex: Matemática">
+        <select id="subjectSelect">
+          <option value="" disabled selected>Carregando...</option>
+        </select>
       </div>
+
+      <!-- CORRIGIDO: select de turma carregado do Supabase -->
       <div class="field">
         <label>Turma</label>
-        <input type="text" id="classInput" placeholder="Ex: 2º Ano B">
+        <select id="classSelect" disabled>
+          <option value="" disabled selected>Selecione a disciplina primeiro</option>
+        </select>
       </div>
+
       <div class="field">
         <label>Questões</label>
         <input type="number" id="totalInput" value="20" min="1" max="100">
@@ -137,27 +157,109 @@
 
 <script src="js/config.js"></script>
 <script>
+  // ── Supabase ─────────────────────────────────────────────────
+  const SUPABASE_URL     = 'https://SEU_PROJETO.supabase.co';
+  const SUPABASE_ANON_KEY = 'SUA_ANON_KEY';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   let answerKey = [];
 
-  // Guard
-  if (!CONFIG.getToken()) window.location.href = "login.html";
+  // Guard de autenticação
+  if (!CONFIG.getToken()) window.location.href = "Login.html";
 
   // Setup user info
   const userName = localStorage.getItem("clivon_user") || "Professor";
   document.getElementById("navName").textContent = userName;
-  document.getElementById("navInitials").textContent = userName.split(" ").slice(0,2).map(n=>n[0]).join("").toUpperCase();
+  document.getElementById("navInitials").textContent =
+    userName.split(" ").slice(0,2).map(n=>n[0]).join("").toUpperCase();
 
-  // Auto-fill subject from session
-  window.addEventListener("DOMContentLoaded", () => {
-    const saved = sessionStorage.getItem("currentSubject");
-    if (saved) {
-      document.getElementById("subjectInput").value = saved;
-      document.getElementById("subjectInput").readOnly = true;
-      document.getElementById("navContext").textContent = `Gabarito · ${saved}`;
+  window.addEventListener("DOMContentLoaded", async () => {
+    await carregarDisciplinas();
+
+    // Se veio do dashboard com disciplina pré-selecionada
+    const savedSubject = sessionStorage.getItem("currentSubject");
+    if (savedSubject) {
+      const sel = document.getElementById("subjectSelect");
+      for (let opt of sel.options) {
+        if (opt.textContent === savedSubject) {
+          sel.value = opt.value;
+          await carregarTurmas(opt.value);
+          document.getElementById("navContext").textContent = `Gabarito · ${savedSubject}`;
+          break;
+        }
+      }
     }
+
     generateGrid();
     updateSummary();
   });
+
+  // ── CORRIGIDO: Carrega disciplinas do Supabase ───────────────
+  async function carregarDisciplinas() {
+    const schoolId = localStorage.getItem("clivon_school_id");
+    const sel = document.getElementById("subjectSelect");
+
+    try {
+      const { data, error } = await supabase
+        .from('subjects')
+        .select('id, name')
+        .eq('school_id', schoolId)
+        .order('name');
+
+      if (error) throw error;
+
+      sel.innerHTML = '<option value="" disabled selected>Selecione a disciplina</option>';
+      data.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = s.name;
+        sel.appendChild(opt);
+      });
+
+      sel.addEventListener('change', async () => {
+        await carregarTurmas(sel.value);
+        updateSummary();
+      });
+
+    } catch (err) {
+      sel.innerHTML = '<option value="" disabled selected>Erro ao carregar</option>';
+      showToast("Erro ao carregar disciplinas.", true);
+    }
+  }
+
+  // ── CORRIGIDO: Carrega turmas do professor logado ────────────
+  async function carregarTurmas(subjectId) {
+    const teacherId = localStorage.getItem("clivon_teacher_id");
+    const classeSel = document.getElementById("classSelect");
+    classeSel.disabled = true;
+    classeSel.innerHTML = '<option value="" disabled selected>Carregando turmas...</option>';
+
+    try {
+      // Busca turmas do professor (RLS garante que só vê as suas)
+      const { data, error } = await supabase
+        .from('classes')
+        .select('id, name')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+
+      classeSel.innerHTML = '<option value="" disabled selected>Selecione a turma</option>';
+      data.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.name;
+        classeSel.appendChild(opt);
+      });
+
+      classeSel.disabled = false;
+      classeSel.addEventListener('change', updateSummary);
+
+    } catch (err) {
+      classeSel.innerHTML = '<option value="" disabled selected>Erro ao carregar</option>';
+      showToast("Erro ao carregar turmas.", true);
+    }
+  }
 
   function generateGrid() {
     const total = parseInt(document.getElementById("totalInput").value) || 20;
@@ -166,7 +268,7 @@
 
     const grid = document.getElementById("editorGrid");
     grid.innerHTML = "";
-    const options = ["A", "B", "C", "D", "E"];
+    const options = ["A","B","C","D","E"];
 
     for (let i = 0; i < total; i++) {
       const row = document.createElement("div");
@@ -200,43 +302,48 @@
   }
 
   function updateSummary() {
-    const subject = document.getElementById("subjectInput").value || "—";
-    const cls = document.getElementById("classInput").value || "—";
-    const done = answerKey.filter(a => a !== null).length;
+    const subjectSel = document.getElementById("subjectSelect");
+    const classSel   = document.getElementById("classSelect");
+    const subjectTxt = subjectSel.options[subjectSel.selectedIndex]?.text || "—";
+    const classTxt   = classSel.options[classSel.selectedIndex]?.text || "—";
+    const done  = answerKey.filter(a => a !== null).length;
     const total = answerKey.length;
 
-    document.getElementById("resSubject").textContent = subject;
-    document.getElementById("resClass").textContent = cls;
-    document.getElementById("resCount").textContent = done;
-    document.getElementById("resCount").style.color = done === total && total > 0 ? "var(--green)" : "var(--red)";
+    document.getElementById("resSubject").textContent = subjectTxt;
+    document.getElementById("resClass").textContent   = classTxt;
+    document.getElementById("resCount").textContent   = done;
+    document.getElementById("resCount").style.color   = done === total && total > 0 ? "var(--green)" : "var(--red)";
     document.getElementById("progressBar").style.width = total ? `${(done/total)*100}%` : "0%";
     document.getElementById("progressLabel").textContent = `${done} de ${total} questões`;
   }
 
   async function saveAnswerKey() {
-    const subject = document.getElementById("subjectInput").value.trim();
-    const classId = document.getElementById("classInput").value.trim();
+    const subjectSel = document.getElementById("subjectSelect");
+    const classSel   = document.getElementById("classSelect");
+    const subjectId  = subjectSel.value;
+    const classId    = classSel.value;
 
-    if (!subject) { showToast("Informe a disciplina.", true); return; }
-    if (!classId)  { showToast("Informe a turma.", true); return; }
+    if (!subjectId) { showToast("Selecione a disciplina.", true); return; }
+    if (!classId)   { showToast("Selecione a turma.", true); return; }
     if (answerKey.includes(null)) { showToast("Preencha todas as respostas.", true); return; }
 
     const btn = document.getElementById("saveBtn");
     btn.disabled = true;
     btn.innerHTML = '<div class="spinner"></div> Salvando...';
 
+    // Salva via backend (mantém compatibilidade com CONFIG.apiFetch)
     try {
       const res = await CONFIG.apiFetch("/save_answer_key", {
         method: "POST",
         body: JSON.stringify({
-          subject,
-          class_id: classId,
+          subject_id:      subjectId,
+          class_id:        classId,
           total_questions: answerKey.length,
-          answers: answerKey,
+          answers:         answerKey,
         }),
       });
 
-      if (!res) return; // redirecionado pelo auth
+      if (!res) return;
       if (!res.ok) throw new Error(await res.text());
 
       showToast("Gabarito salvo com sucesso!", false, true);
@@ -247,9 +354,6 @@
       btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/></svg> Salvar gabarito`;
     }
   }
-
-  document.getElementById("subjectInput").addEventListener("input", updateSummary);
-  document.getElementById("classInput").addEventListener("input", updateSummary);
 
   function showToast(msg, isError = false, isSuccess = false) {
     const t = document.getElementById("toast");
