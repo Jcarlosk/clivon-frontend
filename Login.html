@@ -12,85 +12,41 @@
   <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
   <link rel="stylesheet" href="style.css">
 
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
   <style>
-    .login-wrapper {
-      display: flex;
-      min-height: 100vh;
-      background: var(--surface);
-      overflow: hidden;
-    }
-
+    .login-wrapper { display: flex; min-height: 100vh; background: var(--surface); overflow: hidden; }
     .mode-toggle {
-      position: absolute;
-      top: 32px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--surface);
-      border-radius: 100px;
-      display: flex;
-      padding: 6px;
-      box-shadow: var(--shadow-md);
-      z-index: 10;
-      border: 1px solid var(--border);
+      position: absolute; top: 32px; left: 50%; transform: translateX(-50%);
+      background: var(--surface); border-radius: 100px; display: flex; padding: 6px;
+      box-shadow: var(--shadow-md); z-index: 10; border: 1px solid var(--border);
     }
     .toggle-btn {
-      padding: 8px 24px;
-      border-radius: 100px;
-      border: none;
-      background: transparent;
-      font-family: var(--font);
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-2);
-      cursor: pointer;
-      transition: all 0.2s ease;
+      padding: 8px 24px; border-radius: 100px; border: none; background: transparent;
+      font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--text-2);
+      cursor: pointer; transition: all 0.2s ease;
     }
-    .toggle-btn.active {
-      background: var(--brand);
-      color: #fff;
-      box-shadow: var(--shadow-sm);
-    }
+    .toggle-btn.active { background: var(--brand); color: #fff; box-shadow: var(--shadow-sm); }
 
     .login-left {
-      width: 50%;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 48px 52px;
-      overflow: hidden;
-      z-index: 1;
+      width: 50%; position: relative; display: flex; flex-direction: column;
+      justify-content: space-between; padding: 48px 52px; overflow: hidden; z-index: 1;
       background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
     }
     .login-left::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background-image: url('/assets/img/linha.svg');
-      background-size: cover;
-      background-position: center;
-      opacity: 0.35;
-      z-index: -1; pointer-events: none;
+      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url('/assets/img/linha.svg'); background-size: cover;
+      background-position: center; opacity: 0.35; z-index: -1; pointer-events: none;
     }
-    .left-logo { color: #fff; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 20px;}
-    .left-body { position: relative; z-index: 2; margin-top: 64px; animation: fadeUp 0.4s ease both;}
+    .left-logo { color: #fff; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 20px; }
+    .left-body { position: relative; z-index: 2; margin-top: 64px; animation: fadeUp 0.4s ease both; }
     .left-body.hidden { display: none; }
-    .left-headline { font-size: 38px; font-weight: 700; color: #fff; line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 16px;}
+    .left-headline { font-size: 38px; font-weight: 700; color: #fff; line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 16px; }
     .left-sub { font-size: 15px; color: rgba(255,255,255,0.78); line-height: 1.65; max-width: 340px; }
     .left-sub strong { color: #fff; font-weight: 600; }
     .left-footer { position: relative; z-index: 2; font-size: 13px; color: rgba(255,255,255,0.6); letter-spacing: 0.02em; }
 
     .login-right {
-      width: 50%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 72px;
-      background: var(--surface);
+      width: 50%; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 60px 72px; background: var(--surface);
     }
     .right-inner { width: 100%; max-width: 400px; animation: fadeUp 0.4s ease both; }
     .right-inner.hidden { display: none; }
@@ -103,17 +59,9 @@
 
     .password-wrapper { position: relative; display: flex; align-items: center; }
     .password-wrapper input { padding-right: 40px; }
-    .eye-btn {
-      position: absolute; right: 12px; background: transparent; border: none;
-      color: var(--text-3); font-size: 18px; cursor: pointer; display: flex;
-    }
+    .eye-btn { position: absolute; right: 12px; background: transparent; border: none; color: var(--text-3); font-size: 18px; cursor: pointer; display: flex; }
 
-    /* Hint do PIN */
-    .pin-hint {
-      font-size: 12px; color: var(--text-3); margin-top: 6px;
-      display: flex; align-items: center; gap: 5px;
-    }
-    .pin-hint i { font-size: 13px; }
+    .pin-hint { font-size: 12px; color: var(--text-3); margin-top: 6px; display: flex; align-items: center; gap: 5px; }
 
     .row-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 13px; }
     .row-options label { display: flex; align-items: center; gap: 8px; color: var(--text-2); cursor: pointer; }
@@ -144,72 +92,57 @@
     <div class="left-logo">
       <img src="/assets/img/logo.svg" alt="">
     </div>
-
     <div class="left-body" id="left-aluno">
       <h1 class="left-headline">Olá, Aluno(a)!</h1>
       <p class="left-sub">Acompanhe suas <strong>notas, faltas e horários</strong> de forma simples e rápida no Clivon Edu.</p>
     </div>
-
     <div class="left-body hidden" id="left-prof">
       <h1 class="left-headline">Olá, Professor!</h1>
       <p class="left-sub">O <strong>Clivon Edu</strong> automatiza suas correções em segundos para você focar no que realmente importa: seus alunos.</p>
     </div>
-
     <div class="left-footer">Powered by Clivon</div>
   </div>
 
   <div class="login-right">
 
-    <!-- FORMULÁRIO DO ALUNO -->
+    <!-- ALUNO -->
     <div class="right-inner" id="right-aluno">
       <div class="right-logo">
         <img src="/assets/img/logo-black.svg" alt="Clivon Logo" onerror="this.style.display='none'">
       </div>
-
       <p class="area-label">Portal do Aluno</p>
       <h2 class="form-headline">Acesse sua conta.</h2>
       <p class="form-sub">Entre com o código da turma, sua matrícula e data de nascimento.</p>
 
-      <!-- CAMPO 1: Código da turma (antes era "Código da Escola") -->
       <div class="field" style="margin-bottom: 16px;">
         <label for="join_code">Código da turma</label>
         <input type="text" id="join_code" placeholder="Ex: MAT7B25" autocomplete="off"
-               style="text-transform: uppercase; letter-spacing: 0.1em;"
-               oninput="this.value = this.value.toUpperCase()">
+               style="text-transform:uppercase;letter-spacing:0.1em;"
+               oninput="this.value=this.value.toUpperCase()">
       </div>
 
-      <!-- CAMPO 2: Matrícula -->
       <div class="field" style="margin-bottom: 16px;">
         <label for="enrollment">Número de matrícula</label>
-        <input type="text" id="enrollment" placeholder="Ex: 2025001042" autocomplete="username"
-               inputmode="numeric">
+        <input type="text" id="enrollment" placeholder="Ex: 2025001042" inputmode="numeric">
       </div>
 
-      <!-- CAMPO 3: Data de nascimento (era "Senha") -->
       <div class="field" style="margin-bottom: 24px;">
         <label for="birth_date">Data de nascimento</label>
         <input type="date" id="birth_date" autocomplete="bday">
-        <p class="pin-hint">
-          <i class="ph ph-info"></i>
-          Sua data de nascimento é usada como senha de acesso.
-        </p>
+        <p class="pin-hint"><i class="ph ph-info"></i> Sua data de nascimento é usada como senha de acesso.</p>
       </div>
 
-      <button class="btn btn-primary btn-lg" style="width: 100%; justify-content: center;" id="btnSubmitAluno" onclick="loginAluno()">
+      <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center;" id="btnSubmitAluno" onclick="loginAluno()">
         Entrar na minha conta
       </button>
-
-      <p class="form-footer">
-        Esqueceu sua matrícula? <a href="#">Fale com seu professor</a>
-      </p>
+      <p class="form-footer">Esqueceu sua matrícula? <a href="#">Fale com seu professor</a></p>
     </div>
 
-    <!-- FORMULÁRIO DO PROFESSOR (sem alterações) -->
+    <!-- PROFESSOR -->
     <div class="right-inner hidden" id="right-prof">
       <div class="right-logo">
         <img src="/assets/img/logo-black.svg" alt="Clivon Logo" onerror="this.style.display='none'">
       </div>
-
       <p class="area-label">Área do professor</p>
       <h2 class="form-headline">Entre no seu painel.</h2>
       <p class="form-sub">Acesso exclusivo para professores cadastrados.</p>
@@ -232,13 +165,10 @@
         <a href="#">Esqueci a senha</a>
       </div>
 
-      <button class="btn btn-primary btn-lg" style="width: 100%; justify-content: center;" id="btnSubmitProf" onclick="loginProfessor()">
+      <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center;" id="btnSubmitProf" onclick="loginProfessor()">
         Entrar no painel
       </button>
-
-      <p class="form-footer">
-        Não tem acesso? <a href="#">Fale com o suporte</a>
-      </p>
+      <p class="form-footer">Não tem acesso? <a href="#">Fale com o suporte</a></p>
     </div>
 
   </div>
@@ -246,20 +176,12 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="js/config.js"></script>
 <script>
-  // ── Configuração do Supabase ─────────────────────────────────
-  // Substitua pelas suas credenciais do projeto Supabase
-  const SUPABASE_URL = 'https://SEU_PROJETO.supabase.co';
-  const SUPABASE_ANON_KEY = 'SUA_ANON_KEY';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
   let currentMode = 'aluno';
 
   document.addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-      if (currentMode === 'aluno') loginAluno();
-      else loginProfessor();
-    }
+    if (e.key === "Enter") currentMode === 'aluno' ? loginAluno() : loginProfessor();
   });
 
   function switchMode(mode) {
@@ -274,45 +196,43 @@
 
   function togglePassword(inputId, btn) {
     const input = document.getElementById(inputId);
-    const icon = btn.querySelector('i');
-    if (input.type === 'password') {
-      input.type = 'text';
-      icon.className = 'ph ph-eye-slash';
-    } else {
-      input.type = 'password';
-      icon.className = 'ph ph-eye';
-    }
+    const icon  = btn.querySelector('i');
+    input.type  = input.type === 'password' ? 'text' : 'password';
+    icon.className = input.type === 'password' ? 'ph ph-eye' : 'ph ph-eye-slash';
   }
 
-  // ── LOGIN DO ALUNO via Supabase (sem backend próprio) ────────
+  // ── LOGIN DO ALUNO → POST /aluno/login ───────────────────────
   async function loginAluno() {
     const btn        = document.getElementById("btnSubmitAluno");
     const join_code  = document.getElementById("join_code").value.trim().toUpperCase();
     const enrollment = document.getElementById("enrollment").value.trim();
-    const birthDate  = document.getElementById("birth_date").value; // formato YYYY-MM-DD
+    const birthDate  = document.getElementById("birth_date").value;
 
     if (!join_code)  { showToast("Informe o código da turma.", true); return; }
     if (!enrollment) { showToast("Informe sua matrícula.", true); return; }
     if (!birthDate)  { showToast("Informe sua data de nascimento.", true); return; }
 
-    // Converte data de nascimento para PIN no formato DDMMAAAA
+    // Converte YYYY-MM-DD → DDMMAAAA (PIN)
     const [year, month, day] = birthDate.split('-');
     const pin = `${day}${month}${year}`;
 
     setLoading(btn, true, "Entrando...");
 
     try {
-      // Chama a função SQL student_login_by_code via RPC do Supabase
-      const { data, error } = await supabase.rpc('student_login_by_code', {
-        p_join_code:  join_code,
-        p_enrollment: enrollment,
-        p_pin:        pin
+      const res = await fetch(CONFIG.API_BASE + "/aluno/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ join_code, enrollment, pin }),
       });
 
-      if (error) throw new Error(error.message);
-      if (!data.ok) throw new Error(data.error || "Dados incorretos.");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || "Matrícula ou dados incorretos.");
+      }
 
-      // Salva sessão do aluno no localStorage
+      const data = await res.json();
+
+      localStorage.setItem("clivon_aluno_token",      data.access_token);
       localStorage.setItem("clivon_aluno_student_id", data.student_id);
       localStorage.setItem("clivon_aluno_class_id",   data.class_id);
       localStorage.setItem("clivon_aluno_name",        data.name);
@@ -322,12 +242,12 @@
       setTimeout(() => window.location.href = "aluno-dashboard.html", 900);
 
     } catch (err) {
-      showToast(err.message || "Erro ao entrar. Verifique os dados.", true);
+      showToast(err.message, true);
       setLoading(btn, false, "Entrar na minha conta");
     }
   }
 
-  // ── LOGIN DO PROFESSOR via Supabase Auth ─────────────────────
+  // ── LOGIN DO PROFESSOR → POST /login ─────────────────────────
   async function loginProfessor() {
     const btn      = document.getElementById("btnSubmitProf");
     const email    = document.getElementById("email").value.trim();
@@ -338,48 +258,44 @@
     setLoading(btn, true, "Entrando...");
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const res = await fetch(CONFIG.API_BASE + "/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-      if (error) throw new Error("Credenciais inválidas. Tente novamente.");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || "Credenciais inválidas. Tente novamente.");
+      }
 
-      // Busca dados do professor na tabela teachers
-      const { data: teacher, error: tErr } = await supabase
-        .from('teachers')
-        .select('name, role, school_id')
-        .eq('auth_id', data.user.id)
-        .single();
+      const data = await res.json();
 
-      if (tErr || !teacher) throw new Error("Professor não encontrado.");
-
-      localStorage.setItem("clivon_token",     data.session.access_token);
-      localStorage.setItem("clivon_user",      teacher.name);
-      localStorage.setItem("clivon_email",     email);
-      localStorage.setItem("clivon_role",      teacher.role);
-      localStorage.setItem("clivon_school_id", teacher.school_id);
+      localStorage.setItem("clivon_token", data.access_token);
+      localStorage.setItem("clivon_user",  data.name);
+      localStorage.setItem("clivon_email", email);
 
       showToast("Bem-vindo de volta!", false, true);
       setTimeout(() => window.location.href = "dashboard.html", 900);
 
     } catch (err) {
-      showToast(err.message || "Erro ao conectar.", true);
+      showToast(err.message, true);
       setLoading(btn, false, "Entrar no painel");
     }
   }
 
   function setLoading(btn, isLoading, text) {
-    btn.disabled = isLoading;
+    btn.disabled  = isLoading;
     btn.innerHTML = isLoading ? `<div class="spinner"></div> ${text}` : text;
   }
 
   function showToast(msg, isError = false, isSuccess = false) {
     const t = document.getElementById("toast");
     t.textContent = msg;
-    t.className = "toast show" + (isError ? " error" : isSuccess ? " success" : "");
+    t.className   = "toast show" + (isError ? " error" : isSuccess ? " success" : "");
     clearTimeout(t._t);
     t._t = setTimeout(() => t.classList.remove("show"), 2800);
   }
 </script>
-
-<script src="/js/login.js"></script>
 </body>
 </html>
