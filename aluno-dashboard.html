@@ -257,13 +257,13 @@
     }
 
     function sair() {
-      // CORRIGIDO: limpa as chaves certas e redireciona para Login.html
-      localStorage.removeItem("clivon_aluno_student_id");
-      localStorage.removeItem("clivon_aluno_class_id");
-      localStorage.removeItem("clivon_aluno_name");
-      localStorage.removeItem("clivon_aluno_enrollment");
-      window.location.href = "Login.html";
-    }
+  // Limpa absolutamente TUDO da memória do navegador para não deixar "tokens fantasma"
+  localStorage.clear();
+  sessionStorage.clear();
+  
+  // Redireciona para o ecrã de login
+  window.location.href = "Login.html";
+}
   </script>
 </body>
 </html>
