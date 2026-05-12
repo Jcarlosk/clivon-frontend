@@ -140,11 +140,18 @@
       const classId      = localStorage.getItem("clivon_aluno_class_id");
       const enrollment   = localStorage.getItem("clivon_aluno_enrollment");
 
-      // CORRIGIDO: redireciona para Login.html (maiúsculo, igual ao arquivo)
       if (!studentId || !classId) {
+        // Evita loop: só redireciona se não tentou antes nesta sessão de navegação
+        if (sessionStorage.getItem("aluno_redirect_lock")) {
+          sessionStorage.removeItem("aluno_redirect_lock");
+          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:16px"><p style="font-size:18px;color:#374151">Sessão expirada.</p><a href="Login.html" style="color:#4F46E5;font-weight:600">Fazer login novamente</a></div>';
+          return;
+        }
+        sessionStorage.setItem("aluno_redirect_lock", "1");
         window.location.href = "Login.html";
         return;
       }
+      sessionStorage.removeItem("aluno_redirect_lock");
 
       const primeiroNome = (alunoName || "Aluno").split(" ")[0];
       document.getElementById("navName").textContent    = alunoName || "Aluno";
