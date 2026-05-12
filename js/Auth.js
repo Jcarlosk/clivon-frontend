@@ -9,7 +9,7 @@ const API_BASE = (typeof CONFIG !== "undefined" && CONFIG.API_BASE)
   ? CONFIG.API_BASE.replace(/\/$/, "")   // remove barra final se houver
   : "https://clivon-api.onrender.com";
 
-const REQUEST_TIMEOUT_MS = 15000; // 15 segundos
+const REQUEST_TIMEOUT_MS = 60000; // 60 segundos (ajusta para o cold start do Render)
 
 // ─── Utilitário: fetch com timeout ────────────────────────────────────────────
 async function fetchWithTimeout(url, options = {}) {
@@ -123,9 +123,8 @@ async function loginAluno() {
   if (!enrollment) { showToast("Informe sua matrícula.", true);             return; }
   if (!birthDate)  { showToast("Informe sua data de nascimento.", true);   return; }
 
-  // Converte data para PIN: DD/MM/YYYY → DDMMYYYY
-  const [year, month, day] = birthDate.split("-");
-  const pin = `${day}${month}${year}`;
+// Envia a data original que já vem do input HTML (YYYY-MM-DD)
+  const pin = birthDate;
 
   setLoading(btn, true, "Entrando...");
 
