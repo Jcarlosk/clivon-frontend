@@ -124,7 +124,7 @@ async function loginAluno() {
   if (!birthDate)  { showToast("Informe sua data de nascimento.", true);   return; }
 
 // Envia a data original que já vem do input HTML (YYYY-MM-DD)
-  const pin = birthDate;
+ const pin = birthDate.split("-").reverse().join("");
 
   setLoading(btn, true, "Entrando...");
 
