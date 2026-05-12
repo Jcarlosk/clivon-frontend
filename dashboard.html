@@ -555,7 +555,7 @@ function avatarKey() {
   return `clivon_avatar_${email}`;
 }
 
-if (!CONFIG.getToken()) window.location.href = "login.html";
+if (!CONFIG.getToken()) window.location.href = "Login.html";
 
 window.addEventListener("DOMContentLoaded", () => {
   const name = localStorage.getItem("clivon_user") || "Professor";
@@ -950,7 +950,7 @@ function logout() {
   localStorage.removeItem("clivon_token");
   localStorage.removeItem("clivon_user");
   localStorage.removeItem("clivon_email");
-  window.location.href = "login.html";
+  window.location.href = "Login.html";
 }
 
 function toast(msg, type="") {

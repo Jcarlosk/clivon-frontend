@@ -130,8 +130,8 @@
     </div>
   </div>
 
+  <script src="js/config.js"></script>
   <script>
-    const API_URL = "https://clivon-api.onrender.com";
 
     document.addEventListener("DOMContentLoaded", () => {
       // CORRIGIDO: lê student_id e class_id separados
@@ -162,13 +162,14 @@
     async function carregarDados(studentId, classId) {
       try {
         // Envia student_id e class_id no header para o backend identificar o aluno
-        const res = await fetch(`${API_URL}/aluno/dashboard`, {
+        const res = await CONFIG.apiFetch("/aluno/dashboard", {
           headers: {
             "x-student-id": studentId,
             "x-class-id":   classId
           }
         });
 
+        if (!res) { sair(); return; }
         if (!res.ok) {
           if (res.status === 401) { sair(); return; }
           throw new Error("Erro ao carregar dados");

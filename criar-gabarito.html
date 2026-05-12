@@ -10,9 +10,6 @@
   <link rel="preconnect" href="https://unpkg.com">
   <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
 
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
   <style>
     .two-col { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
     @media (max-width: 780px) { .two-col { grid-template-columns: 1fr; } }
@@ -158,10 +155,6 @@
 <script src="js/config.js"></script>
 <script>
   // ── Supabase ─────────────────────────────────────────────────
-  const SUPABASE_URL     = 'https://SEU_PROJETO.supabase.co';
-  const SUPABASE_ANON_KEY = 'SUA_ANON_KEY';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
   let answerKey = [];
 
   // Guard de autenticação
@@ -194,22 +187,17 @@
     updateSummary();
   });
 
-  // ── CORRIGIDO: Carrega disciplinas do Supabase ───────────────
+  // ── Carrega disciplinas via API (CONFIG.apiFetch) ───────────────
   async function carregarDisciplinas() {
-    const schoolId = localStorage.getItem("clivon_school_id");
     const sel = document.getElementById("subjectSelect");
 
     try {
-      const { data, error } = await supabase
-        .from('subjects')
-        .select('id, name')
-        .eq('school_id', schoolId)
-        .order('name');
-
-      if (error) throw error;
+      const res = await CONFIG.apiFetch("/professor/disciplinas");
+      if (!res || !res.ok) throw new Error("Falha ao buscar disciplinas");
+      const disciplinas = await res.json();
 
       sel.innerHTML = '<option value="" disabled selected>Selecione a disciplina</option>';
-      data.forEach(s => {
+      disciplinas.forEach(s => {
         const opt = document.createElement("option");
         opt.value = s.id;
         opt.textContent = s.name;
@@ -227,25 +215,19 @@
     }
   }
 
-  // ── CORRIGIDO: Carrega turmas do professor logado ────────────
+  // ── Carrega turmas filtradas pela disciplina selecionada ────────────
   async function carregarTurmas(subjectId) {
-    const teacherId = localStorage.getItem("clivon_teacher_id");
     const classeSel = document.getElementById("classSelect");
     classeSel.disabled = true;
     classeSel.innerHTML = '<option value="" disabled selected>Carregando turmas...</option>';
 
     try {
-      // Busca turmas do professor (RLS garante que só vê as suas)
-      const { data, error } = await supabase
-        .from('classes')
-        .select('id, name')
-        .eq('is_active', true)
-        .order('name');
-
-      if (error) throw error;
+      const res = await CONFIG.apiFetch(`/professor/turmas?subject_id=${encodeURIComponent(subjectId)}`);
+      if (!res || !res.ok) throw new Error("Falha ao buscar turmas");
+      const turmas = await res.json();
 
       classeSel.innerHTML = '<option value="" disabled selected>Selecione a turma</option>';
-      data.forEach(c => {
+      turmas.forEach(c => {
         const opt = document.createElement("option");
         opt.value = c.id;
         opt.textContent = c.name;
