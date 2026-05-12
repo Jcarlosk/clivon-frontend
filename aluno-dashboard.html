@@ -162,7 +162,7 @@
     async function carregarDados(studentId, classId) {
       try {
         // Envia student_id e class_id no header para o backend identificar o aluno
-        const res = await CONFIG.apiFetch("/aluno/dashboard", {
+        const res = await CONFIG.alunoFetch("/aluno/dashboard", {
           headers: {
             "x-student-id": studentId,
             "x-class-id":   classId
