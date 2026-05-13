@@ -8,333 +8,235 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
+  <link rel="stylesheet" href="/css/aluno-dashboard.css">
+  <script src="/js/aluno-dashboard.js"></script>
   
-  <style>
-    :root {
-      --brand: #2563eb; /* Azul Clivon */
-      --brand-hover: #1d4ed8;
-      --bg: #f4f6f9;
-      --surface: #ffffff;
-      --text-1: #1e293b;
-      --text-2: #475569;
-      --text-3: #64748b;
-      --border: #e2e8f0;
-      --radius-lg: 12px;
-      --radius-md: 8px;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text-1); }
-
-    /* NAVBAR FIEL AO FIGMA */
-    .nav {
-      background-color: var(--brand);
-      height: 64px;
-      padding: 0 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: #fff;
-    }
-    .nav-left { display: flex; align-items: center; gap: 20px; }
-    .nav-logo img { height: 24px; filter: brightness(0) invert(1); } /* Mantém a logo branca */
-    .nav-divider { width: 1px; height: 24px; background: rgba(255,255,255,0.2); }
-    .nav-title { font-weight: 500; font-size: 16px; }
-    
-    .nav-user {
-      display: flex; align-items: center; gap: 12px; cursor: pointer;
-      padding: 6px 12px; border-radius: 8px; transition: background 0.2s;
-    }
-    .nav-user:hover { background: rgba(255,255,255,0.1); }
-    .avatar { width: 36px; height: 36px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--brand); font-weight: bold; overflow: hidden; }
-    .user-info { display: flex; flex-direction: column; }
-    .user-name { font-weight: 600; font-size: 14px; }
-    .user-email { font-size: 12px; color: rgba(255,255,255,0.8); }
-
-    /* CONTAINER PRINCIPAL */
-    .container { max-width: 1000px; margin: 40px auto; padding: 0 24px; }
-
-    /* CABEÇALHO DA PÁGINA */
-    .page-header { margin-bottom: 32px; }
-    .page-date { font-size: 14px; color: var(--text-3); font-weight: 500; margin-bottom: 8px; text-transform: capitalize;}
-    .page-header h1 { font-size: 32px; font-weight: 700; color: var(--text-1); letter-spacing: -0.5px; margin-bottom: 4px; }
-    .page-header p { font-size: 15px; color: var(--text-2); margin-bottom: 24px; }
-    .header-actions { display: flex; gap: 16px; }
-    .btn { background: var(--brand); color: #fff; border: none; padding: 12px 24px; border-radius: var(--radius-md); font-weight: 600; font-size: 14px; cursor: pointer; transition: background 0.2s; }
-    .btn:hover { background: var(--brand-hover); }
-
-    /* GRID E CARDS */
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-    .card-title { font-size: 16px; font-weight: 600; color: var(--text-1); margin-bottom: 4px; display: flex; justify-content: space-between;}
-    .card-subtitle { font-size: 14px; color: var(--text-3); margin-bottom: 24px; }
-    
-    .dashboard-layout { display: flex; flex-direction: column; gap: 24px; }
-    .grid-2col { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
-    .col-stack { display: flex; flex-direction: column; gap: 24px; }
-
-    /* PROGRESSO DO SEMESTRE */
-    .progress-bar-bg { background: #e2e8f0; height: 12px; border-radius: 10px; width: 100%; overflow: hidden; margin-top: 16px; display: flex;}
-    .progress-bar-fill { background: var(--brand); height: 100%; border-radius: 10px; }
-    .progress-value { font-size: 18px; font-weight: 600; color: var(--brand); margin-top: 8px; }
-
-    /* ESTADOS VAZIOS (Empty states fiéis ao Figma) */
-    .empty-state { text-align: center; padding: 32px 0; }
-    .empty-title { font-size: 18px; font-weight: 600; color: var(--brand); margin-bottom: 8px; }
-    .empty-desc { font-size: 14px; color: var(--text-1); line-height: 1.5; }
-
-    /* FALTAS - FEEDBACK VERDE */
-    .feedback-green { font-size: 16px; font-weight: 600; color: #16a34a; text-align: center; padding: 16px 0; }
-    .feedback-sub { font-size: 14px; color: var(--text-3); text-align: center; }
-
-    /* ACESSO RÁPIDO */
-    .link-list { list-style: none; }
-    .link-item { display: flex; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 500; color: var(--text-1); cursor: pointer; }
-    .link-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .link-item i { color: var(--text-3); }
-
-    /* HORÁRIO - ABAS */
-    .tabs-wrapper { margin-bottom: 24px; }
-    .tabs { display: flex; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: var(--radius-md); width: fit-content; }
-    .tab-btn { background: transparent; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--text-2); cursor: pointer; }
-    .tab-btn.active { background: #0f172a; color: #fff; }
-    
-    .aula-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-1); }
-    .aula-row:last-child { border-bottom: none; }
-    .aula-horario { color: var(--text-2); }
-
-    /* LISTA DE NOTAS PREENCHIDA */
-    .nota-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
-    .nota-row:last-child { border-bottom: none; }
-    .nota-materia { font-weight: 500; font-size: 15px; }
-    .nota-valor { font-weight: 700; font-size: 16px; background: #f1f5f9; padding: 4px 12px; border-radius: 100px; color: var(--text-2); }
-
-  </style>
-</head>
-<body>
+  <body>
 
   <nav class="nav">
     <div class="nav-left">
       <div class="nav-logo">
-        <img src="/assets/img/logo.svg" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png'; this.alt='Clivon'" alt="Logo Clivon">
+        <img src="/assets/img/logo.svg"
+             onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png'; this.alt='Clivon'"
+             alt="Logo Clivon">
       </div>
+
       <div class="nav-divider"></div>
-      <div class="nav-title">Portal do Aluno</div>
-    </div>
-    
-    <div class="nav-user" onclick="sair()">
-      <div class="user-info" style="text-align: right;">
-        <span class="user-name" id="navName">Carregando...</span>
-        <span class="user-email">Sair da conta <i class="ph ph-sign-out" style="vertical-align: middle;"></i></span>
+
+      <div class="nav-title">
+        Portal do Aluno
       </div>
-      <div class="avatar" id="navAvatar">A</div>
+    </div>
+
+    <div class="nav-user" onclick="sair()">
+      <div class="user-info" style="text-align:right;">
+        <span class="user-name" id="navName">Carregando...</span>
+
+        <span class="user-email">
+          Sair da conta
+          <i class="ph ph-sign-out"></i>
+        </span>
+      </div>
+
+      <div class="avatar" id="navAvatar">
+        A
+      </div>
     </div>
   </nav>
 
   <main class="container">
+
+    <!-- HEADER -->
     <header class="page-header">
-      <div class="page-date" id="currentDate">Carregando data...</div>
-      <h1>Olá, <span id="firstName">Aluno</span></h1>
-      <p id="subInfo">Matrícula — veja seu progresso escolar.</p>
-      
+
+      <div class="page-date" id="currentDate">
+        Carregando data...
+      </div>
+
+      <h1>
+        Olá,
+        <span id="firstName">Aluno</span>
+      </h1>
+
+      <p id="subInfo">
+        Matrícula — veja seu progresso escolar.
+      </p>
+
       <div class="header-actions">
-        <button class="btn">Ver agenda</button>
-        <button class="btn">Boletim</button>
+        <button class="btn">
+          Ver agenda
+        </button>
+
+        <button class="btn">
+          Boletim
+        </button>
       </div>
     </header>
 
+    <!-- DASHBOARD -->
     <div class="dashboard-layout">
+
+      <!-- PROGRESSO -->
       <div class="card">
         <div class="card-title">
-          Progresso do semestre
+          <span>Progresso do semestre</span>
         </div>
-        <div class="card-subtitle" style="margin-bottom: 8px;">1º Semestre 2025 · 18 semanas restantes</div>
+
+        <div class="card-subtitle">
+          1º Semestre 2025 · 18 semanas restantes
+        </div>
+
         <div class="progress-bar-bg">
-          <div class="progress-bar-fill" style="width: 32%;"></div>
+          <div class="progress-bar-fill" id="semesterProgress"></div>
         </div>
-        <div class="progress-value">32%</div>
+
+        <div class="progress-value">
+          32%
+        </div>
       </div>
 
+      <!-- GRID -->
       <div class="grid-2col">
+
+        <!-- ESQUERDA -->
         <div class="col-stack">
-          <div class="card" style="min-height: 250px; display: flex; flex-direction: column;">
-            <div class="card-title" style="color: var(--brand);">Média geral</div>
-            <div class="card-subtitle" style="color: var(--text-1); font-size: 16px;">Média por disciplina</div>
-            
-            <div id="notasList" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+
+          <!-- MÉDIAS -->
+          <div class="card"
+               style="min-height:280px; display:flex; flex-direction:column;">
+
+            <div class="card-title"
+                 style="color: var(--brand);">
+              Média geral
+            </div>
+
+            <div class="card-subtitle"
+                 style="color: var(--text-1); font-size:15px;">
+              Média por disciplina
+            </div>
+
+            <div id="notasList"
+                 style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+
               <div class="empty-state">
-                <div class="empty-title">Nenhuma nota lançada ainda</div>
-                <div class="empty-desc">Suas médias aparecerão aqui assim que<br>o professor lançar as avaliações.</div>
+                <div class="empty-title">
+                  Nenhuma nota lançada ainda
+                </div>
+
+                <div class="empty-desc">
+                  Suas médias aparecerão aqui assim que
+                  o professor lançar as avaliações.
+                </div>
               </div>
             </div>
           </div>
 
+          <!-- HORÁRIOS -->
           <div class="card">
-            <div class="card-title" style="margin-bottom: 24px;">Horário da semana</div>
-            
+
+            <div class="card-title"
+                 style="margin-bottom:24px;">
+              Horário da semana
+            </div>
+
             <div class="tabs-wrapper">
+
               <div class="tabs" id="tabsContainer">
-                <button class="tab-btn active" onclick="filtrarHorario(1)">Seg</button>
-                <button class="tab-btn" onclick="filtrarHorario(2)">Ter</button>
-                <button class="tab-btn" onclick="filtrarHorario(3)">Qua</button>
-                <button class="tab-btn" onclick="filtrarHorario(4)">Qui</button>
-                <button class="tab-btn" onclick="filtrarHorario(5)">Sex</button>
+
+                <button class="tab-btn active"
+                        onclick="filtrarHorario(1)">
+                  Seg
+                </button>
+
+                <button class="tab-btn"
+                        onclick="filtrarHorario(2)">
+                  Ter
+                </button>
+
+                <button class="tab-btn"
+                        onclick="filtrarHorario(3)">
+                  Qua
+                </button>
+
+                <button class="tab-btn"
+                        onclick="filtrarHorario(4)">
+                  Qui
+                </button>
+
+                <button class="tab-btn"
+                        onclick="filtrarHorario(5)">
+                  Sex
+                </button>
               </div>
             </div>
 
             <div id="horarioList">
-              <div class="empty-desc" style="text-align: center; padding: 20px 0;">Carregando...</div>
+              <div class="empty-desc"
+                   style="text-align:center; padding:20px 0;">
+                Carregando...
+              </div>
             </div>
           </div>
         </div>
 
+        <!-- DIREITA -->
         <div class="col-stack">
+
+          <!-- FREQUÊNCIA -->
           <div class="card">
-            <div class="card-title" style="margin-bottom: 32px; font-size: 14px; font-weight: 500;">Frequência</div>
-            
+
+            <div class="card-title"
+                 style="margin-bottom:32px; font-size:14px; font-weight:500;">
+              Frequência
+            </div>
+
             <div id="faltasList">
-              <div class="feedback-green">Sem faltas registradas!</div>
-              <div class="feedback-sub">0 faltas · Limite: 25% da carga horária</div>
+
+              <div class="feedback-green">
+                Sem faltas registradas!
+              </div>
+
+              <div class="feedback-sub">
+                0 faltas · Limite: 25% da carga horária
+              </div>
             </div>
           </div>
 
+          <!-- ACESSO RÁPIDO -->
           <div class="card">
-            <div class="card-title" style="margin-bottom: 24px; font-size: 20px;">Acesso rápido</div>
+
+            <div class="card-title"
+                 style="margin-bottom:24px; font-size:20px;">
+              Acesso rápido
+            </div>
+
             <ul class="link-list">
-              <li class="link-item">Declaração de matrícula <i class="ph ph-caret-right"></i></li>
-              <li class="link-item">Calendário escolar <i class="ph ph-caret-right"></i></li>
-              <li class="link-item">Material didático <i class="ph ph-caret-right"></i></li>
-              <li class="link-item">Falar com a secretaria <i class="ph ph-caret-right"></i></li>
+
+              <li class="link-item">
+                Declaração de matrícula
+                <i class="ph ph-caret-right"></i>
+              </li>
+
+              <li class="link-item">
+                Calendário escolar
+                <i class="ph ph-caret-right"></i>
+              </li>
+
+              <li class="link-item">
+                Material didático
+                <i class="ph ph-caret-right"></i>
+              </li>
+
+              <li class="link-item">
+                Falar com a secretaria
+                <i class="ph ph-caret-right"></i>
+              </li>
             </ul>
           </div>
+
         </div>
       </div>
     </div>
   </main>
 
-  <script src="js/config.js"></script>
-  <script>
-    let horarioGlobal = []; // Guarda o horário para podermos filtrar pelas abas
-
-    document.addEventListener("DOMContentLoaded", () => {
-      // Data formatada como no design
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      document.getElementById('currentDate').textContent = new Date().toLocaleDateString('pt-BR', options);
-
-      const alunoName    = localStorage.getItem("clivon_aluno_name");
-      const studentId    = localStorage.getItem("clivon_aluno_student_id");
-      const classId      = localStorage.getItem("clivon_aluno_class_id");
-      const enrollment   = localStorage.getItem("clivon_aluno_enrollment");
-
-      if (!studentId || !classId) {
-        if (sessionStorage.getItem("aluno_redirect_lock")) {
-          sessionStorage.removeItem("aluno_redirect_lock");
-          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px"><p style="font-size:18px;color:#64748b">Sessão expirada.</p><a href="Login.html" style="color:#2563eb;font-weight:600;">Fazer login novamente</a></div>';
-          return;
-        }
-        sessionStorage.setItem("aluno_redirect_lock", "1");
-        window.location.href = "Login.html";
-        return;
-      }
-      sessionStorage.removeItem("aluno_redirect_lock");
-
-      const primeiroNome = (alunoName || "Aluno").split(" ")[0];
-      document.getElementById("navName").textContent = alunoName || "Aluno";
-      document.getElementById("navAvatar").textContent = primeiroNome.charAt(0).toUpperCase();
-      document.getElementById("firstName").textContent = primeiroNome;
-
-      if (enrollment) {
-        document.getElementById("subInfo").textContent = `Matrícula ${enrollment} — veja seu progresso escolar.`;
-      }
-
-      carregarDados(studentId, classId);
-    });
-
-    async function carregarDados(studentId, classId) {
-      try {
-        const res = await CONFIG.alunoFetch("/aluno/dashboard", {
-          headers: { "x-student-id": studentId, "x-class-id": classId }
-        });
-
-        if (!res) { sair(); return; }
-        if (!res.ok) {
-          if (res.status === 401) { sair(); return; }
-          throw new Error("Erro ao carregar dados");
-        }
-
-        const data = await res.json();
-        renderNotas(data.notas);
-        renderFaltas(data.faltas);
-        
-        // Salva o horário global e filtra para mostrar a Segunda-feira (1) por padrão
-        horarioGlobal = data.horario;
-        filtrarHorario(1);
-
-      } catch (error) {
-        console.error("Erro ao carregar dados:", error);
-      }
-    }
-
-    function renderNotas(notas) {
-      const container = document.getElementById("notasList");
-      if (!notas || notas.length === 0) return; // Mantém o empty state do Figma
-      
-      // Se houver notas, muda o layout para listagem
-      container.style.justifyContent = "flex-start";
-      container.innerHTML = notas.map(n => `
-        <div class="nota-row">
-          <span class="nota-materia">${n.subject}</span>
-          <span class="nota-valor">${Number(n.avg_score).toFixed(1)}</span>
-        </div>`).join("");
-    }
-
-    function renderFaltas(faltas) {
-      const container = document.getElementById("faltasList");
-      if (!faltas || faltas.length === 0) return; // Mantém o "Sem faltas registradas!"
-
-      const total = faltas.reduce((acc, curr) => acc + Number(curr.total_absences), 0);
-      container.innerHTML = `
-        <div class="feedback-green" style="color: #dc2626;">Atenção às faltas</div>
-        <div class="feedback-sub">${total} falta(s) registradas · Limite: 25%</div>
-      `;
-    }
-
-    function filtrarHorario(diaSemana) {
-      // Atualiza visual das abas
-      const botoes = document.querySelectorAll('.tab-btn');
-      botoes.forEach((btn, index) => {
-        if(index + 1 === diaSemana) btn.classList.add('active');
-        else btn.classList.remove('active');
-      });
-
-      const container = document.getElementById("horarioList");
-      if (!horarioGlobal || horarioGlobal.length === 0) {
-        container.innerHTML = '<div class="empty-desc" style="text-align:center;">Horário não disponível.</div>';
-        return;
-      }
-
-      const aulasDoDia = horarioGlobal.filter(aula => aula.weekday === diaSemana);
-      
-      if (aulasDoDia.length === 0) {
-        container.innerHTML = '<div class="empty-desc" style="text-align:center; padding-top: 16px;">Sem aulas neste dia.</div>';
-        return;
-      }
-
-      container.innerHTML = aulasDoDia.map(aula => {
-        const inicio = aula.start_time.substring(0, 5);
-        const fim = aula.end_time.substring(0, 5);
-        return `
-          <div class="aula-row">
-            <span>${aula.subject}</span>
-            <span class="aula-horario">${inicio} – ${fim}</span>
-          </div>`;
-      }).join("");
-    }
-
-    function sair() {
-      localStorage.clear();
-      sessionStorage.clear();
-      window.location.href = "Login.html";
-    }
-  </script>
 </body>
-</html>
