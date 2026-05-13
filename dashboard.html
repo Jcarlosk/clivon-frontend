@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -136,12 +136,34 @@
 
     /* ── PAGE ── */
     .page-wrap { max-width: 1180px; margin: 0 auto; padding: 40px 28px 60px; }
-    .page-header { margin-bottom: 32px; }
+    
+    /* MODIFICADO: Header com display flex para botão à direita */
+    .page-header { margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
     .page-header h1 {
       font-size: 32px; font-weight: 800; color: var(--text-1);
       letter-spacing: -.5px; margin-bottom: 6px;
     }
     .page-header p { font-size: 14px; color: var(--text-2); }
+
+    /* NOVO: Botão Principal (Cadastrar Aluno) */
+    .btn-primary {
+      background: var(--blue-light); color: #fff; border: none;
+      padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+      font-family: 'Inter', sans-serif; cursor: pointer; display: flex;
+      align-items: center; gap: 8px; transition: background .15s;
+    }
+    .btn-primary:hover { background: var(--blue); }
+
+    /* NOVO: Estilos de Formulário */
+    .form-group { margin-bottom: 16px; text-align: left; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-1); margin-bottom: 6px; }
+    .form-input {
+      width: 100%; height: 42px; padding: 0 14px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--bg);
+      font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text-1);
+      outline: none; transition: border-color .2s, background .2s;
+    }
+    .form-input:focus { border-color: var(--blue-light); background: #fff; }
 
     /* ── SUBJECT GRID ── */
     .subjects-grid {
@@ -265,7 +287,6 @@
     }
     .btn-scan:hover { background: #2449c0; }
 
-    /* NOVO: BOTÃO DE CHAMADA */
     .btn-chamada {
       width: 100%; height: 36px; background: #F3F4F6; color: var(--text-1);
       border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-weight: 600;
@@ -336,12 +357,12 @@
     .modal-backdrop.open { display: flex; }
     .modal {
       background: #fff; border-radius: 16px; padding: 28px;
-      max-width: 420px; width: 90%;
+      max-width: 420px; width: 90%; max-height: 90vh; overflow-y: auto;
       box-shadow: 0 20px 60px rgba(0,0,0,.15);
       animation: popIn .2s cubic-bezier(.34,1.56,.64,1);
     }
     @keyframes popIn { from{transform:scale(.9);opacity:0} to{transform:scale(1);opacity:1} }
-    .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
     .modal > p { font-size: 13px; color: var(--text-2); margin-bottom: 20px; }
 
     .avatar-preview-wrap {
@@ -370,9 +391,9 @@
     .upload-zone span { font-size: 13px; color: var(--text-2); }
     .upload-zone small { display: block; font-size: 11px; color: var(--text-3); margin-top: 3px; }
 
-    .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
+    .modal-btns { display: flex; gap: 10px; margin-top: 24px; }
     .modal-btns button {
-      flex: 1; height: 38px; border-radius: 8px;
+      flex: 1; height: 42px; border-radius: 8px;
       font-size: 13px; font-weight: 600;
       font-family: 'Inter', sans-serif; cursor: pointer; border: none;
     }
@@ -453,8 +474,14 @@
 <div class="page-wrap">
 
   <div class="page-header">
-    <h1 id="welcomeTitle">Olá, Letícia</h1>
-    <p>Selecione uma disciplina para escanear, configurar gabarito ou registrar faltas.</p>
+    <div>
+      <h1 id="welcomeTitle">Olá, Letícia</h1>
+      <p>Selecione uma disciplina para escanear, configurar gabarito ou registrar faltas.</p>
+    </div>
+    <button class="btn-primary" onclick="openRegisterModal()">
+      <i class="ph ph-user-plus" style="font-size: 18px;"></i>
+      Cadastrar Aluno
+    </button>
   </div>
 
   <div class="subjects-grid" id="subjectGrid"></div>
@@ -484,6 +511,39 @@
     </div>
   </div>
 
+</div>
+
+<div class="modal-backdrop" id="registerModal">
+  <div class="modal">
+    <h3>Cadastrar Novo Aluno</h3>
+    <p class="modal-body" style="margin-bottom: 16px;">Adicione o aluno e vincule a uma turma. O PIN de acesso (senha) será gerado a partir da data de nascimento.</p>
+    
+    <form id="formCadastroAluno" onsubmit="cadastrarAlunoNovo(event)">
+      <div class="form-group">
+        <label class="form-label">Nome Completo</label>
+        <input type="text" id="alunoNome" class="form-input" required placeholder="Ex: João da Silva">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Matrícula</label>
+        <input type="text" id="alunoMatricula" class="form-input" required placeholder="Ex: 2026ESC0010">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data de Nascimento (Gera o PIN)</label>
+        <input type="date" id="alunoNascimento" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Vincular Turma</label>
+        <select id="alunoTurma" class="form-input" required>
+          <option value="">Carregando turmas...</option>
+        </select>
+      </div>
+      
+      <div class="modal-btns">
+        <button type="button" class="modal-cancel" onclick="closeRegisterModal()">Cancelar</button>
+        <button type="submit" class="modal-save" id="btnSubmitAluno">Salvar Aluno</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <div class="modal-backdrop" id="photoModal">
@@ -621,6 +681,75 @@ function toggleDropdown() {
 function closeDropdown() {
   document.getElementById("profileDropdown").classList.remove("open");
   document.getElementById("navUser").classList.remove("open");
+}
+
+/* ========================================================
+   NOVO: LÓGICA DO MODAL DE CADASTRO DE ALUNOS
+======================================================== */
+async function openRegisterModal() {
+  closeDropdown();
+  document.getElementById("registerModal").classList.add("open");
+  
+  const select = document.getElementById("alunoTurma");
+  select.innerHTML = '<option value="">Carregando turmas...</option>';
+  
+  try {
+    const res = await CONFIG.apiFetch("/professor/turmas");
+    if (res && res.ok) {
+      const turmas = await res.json();
+      if (turmas.length === 0) {
+        select.innerHTML = '<option value="">Nenhuma turma encontrada</option>';
+      } else {
+        select.innerHTML = '<option value="">Selecione a turma...</option>' + 
+          turmas.map(t => `<option value="${t.id}">${t.name} (${t.year} - ${t.shift})</option>`).join("");
+      }
+    } else {
+      select.innerHTML = '<option value="">Erro ao carregar turmas</option>';
+    }
+  } catch (error) {
+    select.innerHTML = '<option value="">Erro de conexão</option>';
+  }
+}
+
+function closeRegisterModal() {
+  document.getElementById("registerModal").classList.remove("open");
+  document.getElementById("formCadastroAluno").reset();
+}
+
+async function cadastrarAlunoNovo(event) {
+  event.preventDefault();
+  const btn = document.getElementById("btnSubmitAluno");
+  btn.disabled = true;
+  btn.textContent = "Salvando...";
+
+  const payload = {
+    name: document.getElementById('alunoNome').value,
+    enrollment: document.getElementById('alunoMatricula').value,
+    birth_date: document.getElementById('alunoNascimento').value,
+    class_id: document.getElementById('alunoTurma').value
+  };
+
+  try {
+    const res = await CONFIG.apiFetch("/professor/aluno/cadastrar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      toast("Aluno cadastrado com sucesso!", "ok");
+      closeRegisterModal();
+    } else {
+      toast(data.detail || "Erro ao cadastrar.", "err");
+    }
+  } catch (error) {
+    toast("Falha na comunicação com o servidor.", "err");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Salvar Aluno";
+  }
 }
 
 function toggleExport(subjectKey, e) {
@@ -780,7 +909,6 @@ async function loadDashboard() {
   }
 }
 
-// Renderiza a Interface Central 
 function renderSubjects(serverData) {
   const grid = document.getElementById("subjectGrid");
   grid.innerHTML = SUBJECTS.map(name => {
@@ -932,16 +1060,19 @@ async function execClear() {
   }
 }
 
-["photoModal","clearModal"].forEach(id => {
+/* Event listeners para fechar modais se clicar fora da janelinha branca */
+["photoModal","clearModal","registerModal"].forEach(id => {
   document.getElementById(id).addEventListener("click", e => {
-    if (e.target === e.currentTarget) { id === "photoModal" ? closePhotoModal() : closeClearModal(); }
+    if (e.target === e.currentTarget) { 
+      if (id === "photoModal") closePhotoModal();
+      if (id === "clearModal") closeClearModal();
+      if (id === "registerModal") closeRegisterModal();
+    }
   });
 });
 
 function go(subject, page) {
   sessionStorage.setItem("currentSubject", subject);
-  
-  // Se for página de chamada, também redirecionamos corretamente.
   window.location.href = page; 
 }
 
