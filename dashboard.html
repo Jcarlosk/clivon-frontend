@@ -98,34 +98,101 @@
 
 <div class="modal-backdrop" id="registerModal">
   <div class="modal">
-    <h3>Cadastrar Novo Aluno</h3>
-    <p class="modal-body">Adicione o aluno e vincule a uma turma. O PIN de acesso (senha) será gerado a partir da data de nascimento.</p>
-    
-    <form id="formCadastroAluno" onsubmit="cadastrarAlunoNovo(event)">
-      <div class="form-group">
-        <label class="form-label">Nome Completo</label>
-        <input type="text" id="alunoNome" class="form-input" required placeholder="Ex: João da Silva">
+    <h3>Cadastrar Aluno</h3>
+    <p class="modal-body">Cadastre manualmente ou importe uma lista via planilha CSV.</p>
+
+    <!-- TABS -->
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tabManual" onclick="switchTab('manual')">
+        <i class="ph ph-user-plus"></i> Manual
+      </button>
+      <button class="modal-tab" id="tabCsv" onclick="switchTab('csv')">
+        <i class="ph ph-file-csv"></i> Importar CSV
+      </button>
+    </div>
+
+    <!-- TAB: MANUAL -->
+    <div id="panelManual">
+      <form id="formCadastroAluno" onsubmit="cadastrarAlunoNovo(event)">
+        <div class="form-group">
+          <label class="form-label">Nome Completo</label>
+          <input type="text" id="alunoNome" class="form-input" required placeholder="Ex: João da Silva">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Matrícula</label>
+          <input type="text" id="alunoMatricula" class="form-input" required placeholder="Ex: 2026ESC0010">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data de Nascimento (Gera o PIN)</label>
+          <input type="date" id="alunoNascimento" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vincular Turma</label>
+          <select id="alunoTurma" class="form-input" required>
+            <option value="">Carregando turmas...</option>
+          </select>
+        </div>
+        <div class="modal-btns">
+          <button type="button" class="modal-cancel" onclick="closeRegisterModal()">Cancelar</button>
+          <button type="submit" class="modal-save" id="btnSubmitAluno">Salvar Aluno</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- TAB: CSV -->
+    <div id="panelCsv" style="display:none;">
+
+      <!-- Download modelo -->
+      <div class="csv-model-hint">
+        <i class="ph ph-info"></i>
+        <span>O CSV deve ter as colunas: <strong>nome_completo</strong> e <strong>data_nascimento</strong>. A matrícula e o PIN são gerados automaticamente.</span>
       </div>
-      <div class="form-group">
-        <label class="form-label">Matrícula</label>
-        <input type="text" id="alunoMatricula" class="form-input" required placeholder="Ex: 2026ESC0010">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Data de Nascimento (Gera o PIN)</label>
-        <input type="date" id="alunoNascimento" class="form-input" required>
-      </div>
-      <div class="form-group">
+
+      <button class="btn-download-model" onclick="baixarModeloCsv()">
+        <i class="ph ph-download-simple"></i> Baixar planilha modelo
+      </button>
+
+      <div class="form-group" style="margin-top:14px;">
         <label class="form-label">Vincular Turma</label>
-        <select id="alunoTurma" class="form-input" required>
-          <option value="">Carregando turmas...</option>
+        <select id="csvTurma" class="form-input" required>
+          <option value="">Selecione a turma...</option>
         </select>
       </div>
-      
-      <div class="modal-btns">
-        <button type="button" class="modal-cancel" onclick="closeRegisterModal()">Cancelar</button>
-        <button type="submit" class="modal-save" id="btnSubmitAluno">Salvar Aluno</button>
+
+      <!-- Upload zone -->
+      <div class="upload-zone" id="csvUploadZone" onclick="document.getElementById('csvInput').click()">
+        <i class="ph ph-file-csv"></i>
+        <span id="csvUploadLabel">Clique para escolher o arquivo CSV</span>
+        <small>ou arraste o arquivo aqui</small>
       </div>
-    </form>
+      <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="handleCsvSelect(event)">
+
+      <!-- Preview -->
+      <div id="csvPreview" style="display:none; margin-top:12px;">
+        <div class="csv-preview-header">
+          <span id="csvPreviewCount">0 alunos encontrados</span>
+          <button class="csv-clear-btn" onclick="limparCsv()">
+            <i class="ph ph-x"></i> Remover
+          </button>
+        </div>
+        <div class="csv-preview-table-wrap">
+          <table class="csv-preview-table">
+            <thead>
+              <tr><th>#</th><th>Nome</th><th>Nascimento</th></tr>
+            </thead>
+            <tbody id="csvPreviewBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-btns" style="margin-top:16px;">
+        <button type="button" class="modal-cancel" onclick="closeRegisterModal()">Cancelar</button>
+        <button type="button" class="modal-save" id="btnImportarCsv" onclick="importarCsv()" disabled>
+          Importar Alunos
+        </button>
+      </div>
+    </div>
+
   </div>
 </div>
 
