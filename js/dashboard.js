@@ -487,3 +487,169 @@ function toast(msg, type="") {
   clearTimeout(t._t);
   t._t = setTimeout(() => t.classList.remove("show"), 2800);
 }
+
+/* ========================================================
+   LÓGICA DAS ABAS E IMPORTAÇÃO CSV
+======================================================== */
+
+// Variável global para armazenar os dados do CSV lidos
+let csvParsedData = [];
+
+// 1. Trocar entre abas (Manual / CSV)
+function switchTab(tab) {
+  if (tab === 'manual') {
+    document.getElementById('tabManual').classList.add('active');
+    document.getElementById('tabCsv').classList.remove('active');
+    document.getElementById('panelManual').style.display = 'block';
+    document.getElementById('panelCsv').style.display = 'none';
+  } else {
+    document.getElementById('tabCsv').classList.add('active');
+    document.getElementById('tabManual').classList.remove('active');
+    document.getElementById('panelCsv').style.display = 'block';
+    document.getElementById('panelManual').style.display = 'none';
+  }
+}
+
+// 2. Modifique a sua função openRegisterModal existente para também carregar as turmas no select do CSV
+async function openRegisterModal() {
+  closeDropdown();
+  document.getElementById("registerModal").classList.add("open");
+  switchTab('manual'); // Reseta para a aba manual sempre que abrir
+  limparCsv(); // Limpa envios anteriores
+  
+  const selectManual = document.getElementById("alunoTurma");
+  const selectCsv = document.getElementById("csvTurma");
+  selectManual.innerHTML = '<option value="">Carregando turmas...</option>';
+  
+  try {
+    const res = await CONFIG.apiFetch("/professor/turmas");
+    if (res && res.ok) {
+      const turmas = await res.json();
+      if (turmas.length === 0) {
+        selectManual.innerHTML = '<option value="">Nenhuma turma encontrada</option>';
+      } else {
+        const options = '<option value="">Selecione a turma...</option>' + 
+          turmas.map(t => `<option value="${t.id}">${t.name} (${t.year} - ${t.shift})</option>`).join("");
+        selectManual.innerHTML = options;
+        selectCsv.innerHTML = options; // Preenche as turmas também na aba do CSV
+      }
+    }
+  } catch (error) {
+    selectManual.innerHTML = '<option value="">Erro de conexão</option>';
+  }
+}
+
+// 3. Gerar e Descarregar ficheiro modelo CSV
+function baixarModeloCsv() {
+  const csvContent = "nome_completo,data_nascimento\nJoão da Silva,15/04/2010\nMaria Oliveira,22/08/2009";
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", "clivon_modelo_alunos.csv");
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+// 4. Ler o ficheiro selecionado e mostrar pré-visualização
+function handleCsvSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Aceitar apenas CSV
+  if (!file.name.endsWith('.csv')) {
+    toast("Por favor, selecione um ficheiro .csv válido.", "err");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const text = e.target.result;
+    processarTextoCsv(text);
+  };
+  reader.readAsText(file);
+}
+
+// 5. Processar o texto, separar por colunas e injetar na tabela
+function processarTextoCsv(text) {
+  // Separa as linhas e remove linhas vazias
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  
+  if (lines.length < 2) {
+    toast("O CSV parece estar vazio ou sem dados dos alunos.", "err");
+    return;
+  }
+
+  csvParsedData = [];
+  const tbody = document.getElementById('csvPreviewBody');
+  tbody.innerHTML = '';
+
+  // Ignora o cabeçalho (i=0) e lê os alunos
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',').map(c => c.trim());
+    
+    if (cols.length >= 2) {
+      csvParsedData.push({ name: cols[0], birth_date: cols[1] });
+      
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${i}</td><td>${cols[0]}</td><td>${cols[1]}</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  // Atualizar a Interface visual
+  document.getElementById('csvPreviewCount').textContent = `${csvParsedData.length} alunos encontrados`;
+  document.getElementById('csvUploadZone').style.display = 'none';
+  document.getElementById('csvPreview').style.display = 'block';
+  document.getElementById('btnImportarCsv').disabled = false;
+}
+
+// 6. Remover o CSV carregado
+function limparCsv() {
+  csvParsedData = [];
+  document.getElementById('csvInput').value = "";
+  document.getElementById('csvUploadZone').style.display = 'block';
+  document.getElementById('csvPreview').style.display = 'none';
+  document.getElementById('btnImportarCsv').disabled = true;
+}
+
+// 7. Enviar dados do CSV para o Backend
+async function importarCsv() {
+  const classId = document.getElementById('csvTurma').value;
+  if (!classId) {
+    toast("Selecione a turma antes de importar.", "err");
+    return;
+  }
+
+  const btn = document.getElementById("btnImportarCsv");
+  btn.disabled = true;
+  btn.textContent = "A importar...";
+
+  try {
+    // Altere o URL abaixo consoante a rota que criou no Python (ex: /professor/aluno/importar)
+    const payload = {
+      class_id: classId,
+      alunos: csvParsedData
+    };
+    
+    const res = await CONFIG.apiFetch("/professor/aluno/importar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      toast("Alunos importados com sucesso!", "ok");
+      closeRegisterModal();
+    } else {
+      const data = await res.json();
+      toast(data.detail || "Erro ao processar a lista CSV.", "err");
+    }
+  } catch (error) {
+    toast("Falha na comunicação com o servidor.", "err");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Importar Alunos";
+  }
+}
