@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clivon Edu — Login Admin</title>
-     <link rel="icon" type="image/png" href="/assets/img/icon admin.svg">
+     <<link rel="icon" type="image/svg+xml" href="../assets/img/icon-admin.svg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
@@ -194,14 +194,9 @@
     <div class="login-card">
         <div class="logo-container">
             <div class="logo-mark">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
-                </svg>
+               <img src="/assets/img/logo-black.svg" alt="">
             </div>
-            <div class="logo-text">
-                <b>Clivon</b>
-                <small>Edu</small>
-            </div>
+           
         </div>
 
         <div class="card-title">Painel Admin</div>
@@ -231,6 +226,7 @@
 
     <div class="toast" id="toast"></div>
 
+    <script src="config.js"></script>
     <script>
         // O Javascript agora apenas comunica com o seu Python (FastAPI)
         async function handleAdminLogin(event) {
@@ -244,14 +240,8 @@
             btn.textContent = "A autenticar...";
 
             try {
-                // Defina aqui a rota do seu backend Python (onde está o auth.py / login)
-                // Se usar o config.js, pode ser: const url = CONFIG.API_BASE + "/login";
-                const API_URL = "http://localhost:8000/auth/login"; 
+                const API_URL = CONFIG.API_BASE + "/login";
 
-                /* * NOTA: Se o seu FastAPI usa OAuth2PasswordRequestForm padrão, 
-                 * ele espera os dados no formato form-urlencoded.
-                 * Se for JSON, deixe body: JSON.stringify({ email, password }).
-                 */
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
