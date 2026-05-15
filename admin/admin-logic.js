@@ -872,3 +872,52 @@ function copiarCodigo(code) {
   populateTurmaSelects();
   renderProfs();
 })();
+
+  // O Javascript agora apenas comunica com o seu Python (FastAPI)
+        async function handleAdminLogin(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById("btnSubmit");
+            const email = document.getElementById("email").value.trim().toLowerCase();
+            const password = document.getElementById("password").value;
+
+            btn.disabled = true;
+            btn.textContent = "A autenticar...";
+
+            try {
+                const API_URL = CONFIG.API_BASE + "/login";
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || data.message || "E-mail ou senha incorretos.");
+                }
+
+                // Guarda o token recebido do SEU backend
+                localStorage.setItem("clivon_token", data.access_token);
+                
+                // Redireciona para o Painel Mestre
+                window.location.href = "Admin.html";
+
+            } catch (error) {
+                showError(error.message);
+                btn.disabled = false;
+                btn.textContent = "Entrar";
+            }
+        }
+
+        // Função para exibir mensagem de erro vermelha no canto superior
+        function showError(msg) {
+            const toast = document.getElementById("toast");
+            toast.textContent = msg;
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 3500);
+        }
