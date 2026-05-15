@@ -1,0 +1,767 @@
+\<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clivon Edu — Admin Mestre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="icon" type="image/png" href="/assets/img/icon admin.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin-style.css">
+</head>
+<body>
+
+  <!-- ════════════════════════════════
+       NAV
+  ════════════════════════════════ -->
+  <nav class="nav">
+
+    <div class="nav-left">
+      <a class="nav-logo" href="#">
+        <div class="logo-mark">
+          <img src="/assets/img/logo.svg" alt="">
+        </div>
+      
+      </a>
+      <div class="nav-title">Admin</div>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="setView('dashboard', this)">Dashboard</button>
+      <button class="nav-tab"        onclick="setView('professores', this)">Professores</button>
+      <button class="nav-tab"        onclick="setView('alunos', this)">Alunos</button>
+      <button class="nav-tab"        onclick="setView('turmas', this)">Turmas</button>
+    </div>
+
+    <div class="nav-user" onclick="toggleDD()">
+      <div class="nav-avatar">AD</div>
+      <div class="nav-info">
+        <b>Diretoria</b>
+        <small>admin@escola.edu.br</small>
+      </div>
+      <svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+
+      <div class="dd" id="dd">
+        <button class="dd-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+          Meu perfil
+        </button>
+        <button class="dd-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          Configurações
+        </button>
+        <hr class="dd-divider">
+        <button class="dd-item danger" onclick="logout(event)">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Sair do painel
+        </button>
+      </div>
+    </div>
+
+  </nav><!-- /nav -->
+
+
+  <!-- ════════════════════════════════
+       PAGE
+  ════════════════════════════════ -->
+  <div class="page">
+
+    <!-- ── VIEW: DASHBOARD ── -->
+    <div class="view active" id="view-dashboard">
+
+      <div class="ph">
+        <div>
+          <h1>Visão Geral</h1>
+          <p>Resumo do sistema — escola <b id="schoolName">Escola Demo</b></p>
+        </div>
+        <div class="ph-actions">
+          <button class="btn btn-outline btn-sm" onclick="loadDashboard()">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+            Atualizar
+          </button>
+        </div>
+      </div>
+
+      <div class="stats" id="dashStats">
+
+        <div class="sc">
+          <div class="sc-icon sc-icon--blue">
+            <svg fill="none" stroke="#3B5BF6" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-label">Professores</div>
+            <div class="sc-val" id="st-teachers">—</div>
+            <div class="sc-sub">cadastrados</div>
+          </div>
+        </div>
+
+        <div class="sc">
+          <div class="sc-icon sc-icon--green">
+            <svg fill="none" stroke="#22C55E" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-label">Alunos</div>
+            <div class="sc-val" id="st-students">—</div>
+            <div class="sc-sub">matriculados</div>
+          </div>
+        </div>
+
+        <div class="sc">
+          <div class="sc-icon sc-icon--yellow">
+            <svg fill="none" stroke="#F59E0B" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M3 9h18M9 21V9"/>
+            </svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-label">Turmas Ativas</div>
+            <div class="sc-val" id="st-classes">—</div>
+            <div class="sc-sub">este ano</div>
+          </div>
+        </div>
+
+        <div class="sc">
+          <div class="sc-icon sc-icon--purple">
+            <svg fill="none" stroke="#A855F7" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M9 11l3 3L22 4"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-label">Provas Corrigidas</div>
+            <div class="sc-val" id="st-scans">—</div>
+            <div class="sc-sub">no total</div>
+          </div>
+        </div>
+
+      </div><!-- /stats -->
+
+      <div class="dash-grid">
+
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Alunos por Turma</span>
+          </div>
+          <div class="bar-chart" id="barChart">
+            <div class="empty"><p>Carregando dados...</p></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Atividade Recente</span>
+          </div>
+          <div class="activity-list" id="activityList">
+            <div class="empty"><p>Carregando...</p></div>
+          </div>
+        </div>
+
+      </div><!-- /dash-grid -->
+
+    </div><!-- /view-dashboard -->
+
+
+    <!-- ── VIEW: PROFESSORES ── -->
+    <div class="view" id="view-professores">
+
+      <div class="ph">
+        <div>
+          <h1>Professores</h1>
+          <p>Gerencie contas, roles e senhas dos professores.</p>
+        </div>
+        <div class="ph-actions">
+          <button class="btn btn-primary" onclick="openM('mProfessor')">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Novo Professor
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <span class="card-title">Professores Cadastrados</span>
+            <span class="card-count" id="profCount">0</span>
+          </div>
+          <div class="card-tools">
+            <div class="search-wrap">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                class="search-input"
+                placeholder="Buscar por nome ou e-mail…"
+                oninput="filterProfs(this.value)"
+              >
+            </div>
+            <select
+              class="inp inp--sm"
+              onchange="filterProfs(document.querySelector('#view-professores .search-input').value, this.value)"
+            >
+              <option value="">Todos os roles</option>
+              <option value="admin">Admin</option>
+              <option value="coordinator">Coordenador</option>
+              <option value="teacher">Professor</option>
+            </select>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Role</th>
+                <th>Turmas</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="profBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /view-professores -->
+
+
+    <!-- ── VIEW: ALUNOS ── -->
+    <div class="view" id="view-alunos">
+
+      <div class="ph">
+        <div>
+          <h1>Alunos</h1>
+          <p>Cadastre, importe e gerencie os alunos da instituição.</p>
+        </div>
+        <div class="ph-actions">
+          <button class="btn btn-outline" onclick="openM('mImportCSV')">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Importar CSV
+          </button>
+          <button class="btn btn-primary" onclick="openM('mAluno')">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Novo Aluno
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <span class="card-title">Alunos Matriculados</span>
+            <span class="card-count" id="alunoCount">0</span>
+          </div>
+          <div class="card-tools">
+            <div class="search-wrap">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                class="search-input"
+                placeholder="Buscar por nome ou matrícula…"
+                oninput="filterAlunos(this.value)"
+              >
+            </div>
+            <select
+              class="inp inp--sm"
+              id="alunoTurmaFilter"
+              onchange="filterAlunos(document.querySelector('#view-alunos .search-input').value)"
+            >
+              <option value="">Todas as turmas</option>
+            </select>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Matrícula</th>
+                <th>Turma</th>
+                <th>Nascimento</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="alunoBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /view-alunos -->
+
+
+    <!-- ── VIEW: TURMAS ── -->
+    <div class="view" id="view-turmas">
+
+      <div class="ph">
+        <div>
+          <h1>Turmas</h1>
+          <p>Crie e gerencie turmas. Cada turma possui um código de acesso único.</p>
+        </div>
+        <div class="ph-actions">
+          <button class="btn btn-dark" onclick="openM('mTurma')">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Nova Turma
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <span class="card-title">Turmas Ativas</span>
+            <span class="card-count" id="turmaCount">0</span>
+          </div>
+          <div class="card-tools">
+            <div class="search-wrap">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                class="search-input"
+                placeholder="Buscar turma…"
+                oninput="filterTurmas(this.value)"
+              >
+            </div>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Turma</th>
+                <th>Ano</th>
+                <th>Turno</th>
+                <th>Código de Acesso</th>
+                <th>Alunos</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="turmaBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /view-turmas -->
+
+  </div><!-- /page -->
+
+
+  <!-- ════════════════════════════════
+       MODALS
+  ════════════════════════════════ -->
+
+  <!-- Modal: Cadastrar Professor -->
+  <div class="modal-bg" id="mProfessor">
+    <div class="modal">
+      <div class="m-icon m-icon--brand">
+        <svg fill="none" stroke="var(--brand)" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <line x1="19" y1="8" x2="19" y2="14"/>
+          <line x1="16" y1="11" x2="22" y2="11"/>
+        </svg>
+      </div>
+      <h3>Cadastrar Professor</h3>
+      <p>Cria auth user + registro em <code>public.teachers</code> via <code>create_teacher()</code>.</p>
+
+      <form onsubmit="salvarProfessor(event)">
+        <div class="info-box">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span>O professor receberá acesso imediato com a senha definida abaixo.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="lbl" for="pNome">Nome Completo</label>
+          <input type="text" id="pNome" class="inp" required placeholder="Ex: Ana Souza">
+        </div>
+
+        <div class="form-group">
+          <label class="lbl" for="pEmail">E-mail (Login)</label>
+          <input type="email" id="pEmail" class="inp" required placeholder="ana@escola.edu.br">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="lbl" for="pSenha">Senha Inicial</label>
+            <input type="text" id="pSenha" class="inp" required value="mudar123">
+            <div class="inp-hint">Mín. 8 caracteres</div>
+          </div>
+          <div class="form-group">
+            <label class="lbl" for="pRole">Role</label>
+            <select id="pRole" class="inp">
+              <option value="teacher">Professor</option>
+              <option value="coordinator">Coordenador</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="m-divider">
+        <div class="m-btns">
+          <button type="button" class="modal-cancel" onclick="closeM('mProfessor')">Cancelar</button>
+          <button type="submit" class="modal-save" id="btnSalvarProf">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            Salvar Professor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div><!-- /mProfessor -->
+
+
+  <!-- Modal: Redefinir Senha -->
+  <div class="modal-bg" id="mResetSenha">
+    <div class="modal">
+      <div class="m-icon m-icon--yellow">
+        <svg fill="none" stroke="var(--yellow)" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h3>Redefinir Senha</h3>
+      <p>Chama <code>reset_teacher_password(email, nova_senha)</code> no banco.</p>
+
+      <form onsubmit="confirmarResetSenha(event)">
+        <div class="form-group">
+          <label class="lbl" for="rsProfNome">Professor</label>
+          <input type="text" id="rsProfNome" class="inp" disabled>
+          <input type="hidden" id="rsProfEmail">
+        </div>
+        <div class="form-group">
+          <label class="lbl" for="rsNovaSenha">Nova Senha</label>
+          <input type="text" id="rsNovaSenha" class="inp" required placeholder="mínimo 8 caracteres" value="mudar123">
+          <div class="inp-hint">O professor deverá trocar no próximo acesso.</div>
+        </div>
+
+        <hr class="m-divider">
+        <div class="m-btns">
+          <button type="button" class="modal-cancel" onclick="closeM('mResetSenha')">Cancelar</button>
+          <button type="submit" class="modal-save modal-save--yellow">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Redefinir Senha
+          </button>
+        </div>
+      </form>
+    </div>
+  </div><!-- /mResetSenha -->
+
+
+  <!-- Modal: Cadastrar Aluno -->
+  <div class="modal-bg" id="mAluno">
+    <div class="modal">
+      <div class="m-icon m-icon--green">
+        <svg fill="none" stroke="var(--green)" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <line x1="19" y1="8" x2="19" y2="14"/>
+          <line x1="16" y1="11" x2="22" y2="11"/>
+        </svg>
+      </div>
+      <h3>Cadastrar Aluno</h3>
+      <p>Chama <code>create_student(school_id, class_id, name, birth_date)</code>. PIN gerado automaticamente = DDMMAAAA.</p>
+
+      <form onsubmit="salvarAluno(event)">
+        <div class="form-group">
+          <label class="lbl" for="aNome">Nome Completo</label>
+          <input type="text" id="aNome" class="inp" required placeholder="Ex: Maria da Silva">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="lbl" for="aNasc">Data de Nascimento</label>
+            <input type="date" id="aNasc" class="inp" required>
+          </div>
+          <div class="form-group">
+            <label class="lbl" for="aTurma">Turma</label>
+            <select id="aTurma" class="inp" required>
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span>A matrícula será gerada automaticamente. O PIN será a data de nascimento no formato DDMMAAAA.</span>
+        </div>
+
+        <hr class="m-divider">
+        <div class="m-btns">
+          <button type="button" class="modal-cancel" onclick="closeM('mAluno')">Cancelar</button>
+          <button type="submit" class="modal-save modal-save--green">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            Cadastrar Aluno
+          </button>
+        </div>
+      </form>
+    </div>
+  </div><!-- /mAluno -->
+
+
+  <!-- Modal: Redefinir PIN -->
+  <div class="modal-bg" id="mResetPin">
+    <div class="modal">
+      <div class="m-icon m-icon--yellow">
+        <svg fill="none" stroke="var(--yellow)" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h3>Redefinir PIN do Aluno</h3>
+      <p>Chama <code>reset_student_pin(enrollment, new_pin)</code>. PIN deve ter 8 dígitos numéricos (DDMMAAAA).</p>
+
+      <form onsubmit="confirmarResetPin(event)">
+        <div class="form-group">
+          <label class="lbl" for="rpAlunoNome">Aluno</label>
+          <input type="text" id="rpAlunoNome" class="inp" disabled>
+          <input type="hidden" id="rpMatricula">
+        </div>
+        <div class="form-group">
+          <label class="lbl" for="rpNovoPIN">Novo PIN (DDMMAAAA)</label>
+          <input type="text" id="rpNovoPIN" class="inp" required placeholder="Ex: 15042010" maxlength="8" pattern="\d{8}">
+          <div class="inp-hint">Formato: dia + mês + ano completo. Ex: 15 de abril de 2010 → 15042010</div>
+        </div>
+
+        <hr class="m-divider">
+        <div class="m-btns">
+          <button type="button" class="modal-cancel" onclick="closeM('mResetPin')">Cancelar</button>
+          <button type="submit" class="modal-save modal-save--yellow">Redefinir PIN</button>
+        </div>
+      </form>
+    </div>
+  </div><!-- /mResetPin -->
+
+
+  <!-- Modal: Importar CSV -->
+  <div class="modal-bg" id="mImportCSV">
+    <div class="modal modal--wide">
+      <div class="m-icon m-icon--brand">
+        <svg fill="none" stroke="var(--brand)" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <h3>Importar Alunos via CSV</h3>
+      <p>Chama <code>import_students(school_id, class_id, [{name, birth_date}])</code>. Retorna resumo com erros por linha.</p>
+
+      <div class="form-group">
+        <label class="lbl" for="csvTurma">Turma de destino</label>
+        <select id="csvTurma" class="inp" required>
+          <option value="">Selecione a turma...</option>
+        </select>
+      </div>
+
+      <div class="drop-zone" onclick="document.getElementById('csvFile').click()" id="dropZone">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+          <path d="M12 12v9"/>
+          <path d="m8 17 4 4 4-4"/>
+        </svg>
+        <p>Clique ou arraste o arquivo CSV aqui</p>
+        <small>Colunas obrigatórias: <b>name</b>, <b>birth_date</b> (YYYY-MM-DD)</small>
+      </div>
+      <input type="file" id="csvFile" accept=".csv" onchange="handleCSV(this)">
+
+      <div id="csvPreview" class="csv-preview" style="display:none;"></div>
+
+      <div class="info-box">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>Exemplo: <code>Maria da Silva,2010-04-15</code>. Erros por linha são retornados sem interromper a importação.</span>
+      </div>
+
+      <hr class="m-divider">
+      <div class="m-btns">
+        <button type="button" class="modal-cancel" onclick="closeM('mImportCSV')">Cancelar</button>
+        <button type="button" class="modal-save" onclick="importarCSV()" id="btnImport">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          Importar Alunos
+        </button>
+      </div>
+    </div>
+  </div><!-- /mImportCSV -->
+
+
+  <!-- Modal: Criar Turma -->
+  <div class="modal-bg" id="mTurma">
+    <div class="modal">
+      <div class="m-icon m-icon--dark">
+        <svg fill="none" stroke="var(--admin)" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M3 9h18M9 21V9"/>
+        </svg>
+      </div>
+      <h3>Criar Nova Turma</h3>
+      <p>Adicione uma turma. O código de acesso do aluno (<code>join_code</code>) será gerado automaticamente.</p>
+
+      <form onsubmit="salvarTurma(event)">
+        <div class="form-group">
+          <label class="lbl" for="tNome">Nome da Turma</label>
+          <input type="text" id="tNome" class="inp" required placeholder="Ex: 1º Ano A">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="lbl" for="tAno">Ano</label>
+            <input type="number" id="tAno" class="inp" required placeholder="2026" value="2026">
+          </div>
+          <div class="form-group">
+            <label class="lbl" for="tTurno">Turno</label>
+            <select id="tTurno" class="inp" required>
+              <option value="Manhã">Manhã</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Noite">Noite</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="lbl" for="tJoinCode">Código de Acesso (join_code)</label>
+          <div class="join-code-row">
+            <input type="text" id="tJoinCode" class="inp" placeholder="Gerado automaticamente" maxlength="10">
+            <button type="button" class="btn btn-outline btn-sm" onclick="gerarJoinCode()">Gerar</button>
+          </div>
+          <div class="inp-hint">Usado pelo aluno para logar via <code>student_login_by_code()</code>.</div>
+        </div>
+
+        <hr class="m-divider">
+        <div class="m-btns">
+          <button type="button" class="modal-cancel" onclick="closeM('mTurma')">Cancelar</button>
+          <button type="submit" class="modal-save modal-save--dark">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Criar Turma
+          </button>
+        </div>
+      </form>
+    </div>
+  </div><!-- /mTurma -->
+
+
+  <!-- Modal: Ver Alunos da Turma -->
+  <div class="modal-bg" id="mVerAlunos">
+    <div class="modal modal--wide">
+      <div class="m-icon m-icon--green">
+        <svg fill="none" stroke="var(--green)" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <h3>Alunos da Turma: <span id="vaTurmaNome"></span></h3>
+      <p>Via <code>SELECT * FROM vw_class_students WHERE class_id = '...'</code></p>
+
+      <div class="modal-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Matrícula</th>
+              <th>Nascimento</th>
+              <th>Ingresso</th>
+            </tr>
+          </thead>
+          <tbody id="vaBody"></tbody>
+        </table>
+      </div>
+
+      <hr class="m-divider">
+      <div class="m-btns">
+        <button type="button" class="modal-save" onclick="closeM('mVerAlunos')">Fechar</button>
+      </div>
+    </div>
+  </div><!-- /mVerAlunos -->
+
+
+  <!-- ════════════════════════════════
+       TOAST
+  ════════════════════════════════ -->
+  <div class="toast" id="toast">
+    <div class="t-dot"></div>
+    <span id="toastMsg"></span>
+  </div>
+
+
+  <!-- ════════════════════════════════
+       SCRIPTS
+  ════════════════════════════════ -->
+  <!-- Integração com backend existente -->
+  <!-- <script src="config.js"></script> -->
+  <!-- <script src="script.js"></script> -->
+
+  <!-- Lógica do painel admin -->
+  <script src="admin-logic.js"></script>
+
+</body>
+</html>

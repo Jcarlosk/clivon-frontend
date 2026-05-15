@@ -1,0 +1,291 @@
+\<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clivon Edu — Login Admin</title>
+     <link rel="icon" type="image/png" href="/assets/img/icon admin.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ═══════════════════════════════════════════════
+           DESIGN TOKENS & RESET
+        ═══════════════════════════════════════════════ */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --brand: #2563EB;
+            --brand-hover: #1D4ED8;
+            --bg: #F4F4F5; /* Fundo cinza super claro fiel à imagem */
+            --surface: #FFFFFF;
+            --text-main: #111827;
+            --text-muted: #4B5563;
+            --border: #D1D5DB;
+            --font: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            font-family: var(--font);
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ═══════════════════════════════════════════════
+           CARD DE LOGIN
+        ═══════════════════════════════════════════════ */
+        .login-card {
+            background: var(--surface);
+            width: 100%;
+            max-width: 480px; 
+            border-radius: 20px;
+            padding: 56px 48px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ── LOGO ── */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .logo-mark {
+            color: #1E293B;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-text {
+            line-height: 1;
+            display: flex;
+            flex-direction: column;
+            color: #1E293B;
+        }
+
+        .logo-text b {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text small {
+            font-size: 13px;
+            font-weight: 600;
+            align-self: flex-end;
+            margin-top: 2px;
+        }
+
+        /* ── HEADERS ── */
+        .card-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 32px;
+        }
+
+        .card-subtitle {
+            text-align: left;
+            font-size: 16.5px;
+            font-weight: 400;
+            color: var(--text-main);
+            margin-bottom: 36px;
+            line-height: 1.4;
+        }
+
+        /* ── FORMULÁRIO ── */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 50px;
+            padding: 0 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: var(--font);
+            font-size: 15px;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-input::placeholder {
+            color: #9CA3AF;
+        }
+
+        .form-input:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* ── BOTÃO ── */
+        .btn-submit {
+            width: 100%;
+            height: 50px;
+            background: var(--brand);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 10px;
+            font-family: var(--font);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-submit:hover {
+            background: var(--brand-hover);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* ── FOOTER ── */
+        .card-footer {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        /* ── TOAST MENSAGEM DE ERRO ── */
+        .toast {
+            position: fixed; top: 24px; right: 24px;
+            background: #EF4444; color: #fff;
+            padding: 12px 20px; border-radius: 8px;
+            font-size: 14px; font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            opacity: 0; pointer-events: none;
+            transform: translateY(-10px); transition: all 0.3s ease;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo-container">
+            <div class="logo-mark">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
+                </svg>
+            </div>
+            <div class="logo-text">
+                <b>Clivon</b>
+                <small>Edu</small>
+            </div>
+        </div>
+
+        <div class="card-title">Painel Admin</div>
+
+        <div class="card-subtitle">
+            Entre com suas credenciais para<br>acessar o painel.
+        </div>
+
+        <form onsubmit="handleAdminLogin(event)">
+            <div class="form-group">
+                <label class="form-label">E-mail</label>
+                <input type="email" id="email" class="form-input" placeholder="leticia@escola.edu.br" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Senha</label>
+                <input type="password" id="password" class="form-input" placeholder="***********" required>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btnSubmit">Entrar</button>
+        </form>
+
+        <div class="card-footer">
+            Powered by Clivon
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // O Javascript agora apenas comunica com o seu Python (FastAPI)
+        async function handleAdminLogin(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById("btnSubmit");
+            const email = document.getElementById("email").value.trim().toLowerCase();
+            const password = document.getElementById("password").value;
+
+            btn.disabled = true;
+            btn.textContent = "A autenticar...";
+
+            try {
+                // Defina aqui a rota do seu backend Python (onde está o auth.py / login)
+                // Se usar o config.js, pode ser: const url = CONFIG.API_BASE + "/login";
+                const API_URL = "http://localhost:8000/auth/login"; 
+
+                /* * NOTA: Se o seu FastAPI usa OAuth2PasswordRequestForm padrão, 
+                 * ele espera os dados no formato form-urlencoded.
+                 * Se for JSON, deixe body: JSON.stringify({ email, password }).
+                 */
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || data.message || "E-mail ou senha incorretos.");
+                }
+
+                // Guarda o token recebido do SEU backend
+                localStorage.setItem("clivon_token", data.access_token);
+                
+                // Redireciona para o Painel Mestre
+                window.location.href = "Admin.html";
+
+            } catch (error) {
+                showError(error.message);
+                btn.disabled = false;
+                btn.textContent = "Entrar";
+            }
+        }
+
+        // Função para exibir mensagem de erro vermelha no canto superior
+        function showError(msg) {
+            const toast = document.getElementById("toast");
+            toast.textContent = msg;
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 3500);
+        }
+    </script>
+</body>
+</html>

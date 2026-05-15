@@ -1,0 +1,13 @@
+{
+  "disciplinas": [
+    { "id": "1", "name": "Matemática" },
+    { "id": "2", "name": "Português" }
+  ],
+  "turmas": [
+    { "id": "1", "name": "6º Ano A", "subject_id": "1" },
+    { "id": "2", "name": "6º Ano B", "subject_id": "2" }
+  ],
+  "alunos": [
+    { "id": 1, "name": "Ana Souza", "enrollment": "2024001", "class_id": "1" }
+  ]
+}
