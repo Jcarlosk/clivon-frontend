@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -11,9 +11,6 @@
 </head>
 <body>
 
-  <!-- ════════════════════════════════
-       NAV
-  ════════════════════════════════ -->
   <nav class="nav">
 
     <div class="nav-left">
@@ -36,7 +33,7 @@
     <div class="nav-user" onclick="toggleDD()">
       <div class="nav-avatar">AD</div>
       <div class="nav-info">
-        <b>Diretoria</b>
+        <b id="navUserName">Diretoria</b>
         <small>admin@escola.edu.br</small>
       </div>
       <svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -70,15 +67,8 @@
       </div>
     </div>
 
-  </nav><!-- /nav -->
+  </nav><div class="page">
 
-
-  <!-- ════════════════════════════════
-       PAGE
-  ════════════════════════════════ -->
-  <div class="page">
-
-    <!-- ── VIEW: DASHBOARD ── -->
     <div class="view active" id="view-dashboard">
 
       <div class="ph">
@@ -157,9 +147,7 @@
           </div>
         </div>
 
-      </div><!-- /stats -->
-
-      <div class="dash-grid">
+      </div><div class="dash-grid">
 
         <div class="card">
           <div class="card-head">
@@ -179,13 +167,7 @@
           </div>
         </div>
 
-      </div><!-- /dash-grid -->
-
-    </div><!-- /view-dashboard -->
-
-
-    <!-- ── VIEW: PROFESSORES ── -->
-    <div class="view" id="view-professores">
+      </div></div><div class="view" id="view-professores">
 
       <div class="ph">
         <div>
@@ -249,11 +231,7 @@
         </div>
       </div>
 
-    </div><!-- /view-professores -->
-
-
-    <!-- ── VIEW: ALUNOS ── -->
-    <div class="view" id="view-alunos">
+    </div><div class="view" id="view-alunos">
 
       <div class="ph">
         <div>
@@ -323,11 +301,7 @@
         </div>
       </div>
 
-    </div><!-- /view-alunos -->
-
-
-    <!-- ── VIEW: TURMAS ── -->
-    <div class="view" id="view-turmas">
+    </div><div class="view" id="view-turmas">
 
       <div class="ph">
         <div>
@@ -383,17 +357,7 @@
         </div>
       </div>
 
-    </div><!-- /view-turmas -->
-
-  </div><!-- /page -->
-
-
-  <!-- ════════════════════════════════
-       MODALS
-  ════════════════════════════════ -->
-
-  <!-- Modal: Cadastrar Professor -->
-  <div class="modal-bg" id="mProfessor">
+    </div></div><div class="modal-bg" id="mProfessor">
     <div class="modal">
       <div class="m-icon m-icon--brand">
         <svg fill="none" stroke="var(--brand)" stroke-width="2" viewBox="0 0 24 24">
@@ -456,11 +420,7 @@
         </div>
       </form>
     </div>
-  </div><!-- /mProfessor -->
-
-
-  <!-- Modal: Redefinir Senha -->
-  <div class="modal-bg" id="mResetSenha">
+  </div><div class="modal-bg" id="mResetSenha">
     <div class="modal">
       <div class="m-icon m-icon--yellow">
         <svg fill="none" stroke="var(--yellow)" stroke-width="2" viewBox="0 0 24 24">
@@ -496,11 +456,7 @@
         </div>
       </form>
     </div>
-  </div><!-- /mResetSenha -->
-
-
-  <!-- Modal: Cadastrar Aluno -->
-  <div class="modal-bg" id="mAluno">
+  </div><div class="modal-bg" id="mAluno">
     <div class="modal">
       <div class="m-icon m-icon--green">
         <svg fill="none" stroke="var(--green)" stroke-width="2" viewBox="0 0 24 24">
@@ -555,11 +511,7 @@
         </div>
       </form>
     </div>
-  </div><!-- /mAluno -->
-
-
-  <!-- Modal: Redefinir PIN -->
-  <div class="modal-bg" id="mResetPin">
+  </div><div class="modal-bg" id="mResetPin">
     <div class="modal">
       <div class="m-icon m-icon--yellow">
         <svg fill="none" stroke="var(--yellow)" stroke-width="2" viewBox="0 0 24 24">
@@ -589,11 +541,7 @@
         </div>
       </form>
     </div>
-  </div><!-- /mResetPin -->
-
-
-  <!-- Modal: Importar CSV -->
-  <div class="modal-bg" id="mImportCSV">
+  </div><div class="modal-bg" id="mImportCSV">
     <div class="modal modal--wide">
       <div class="m-icon m-icon--brand">
         <svg fill="none" stroke="var(--brand)" stroke-width="2" viewBox="0 0 24 24">
@@ -647,11 +595,7 @@
         </button>
       </div>
     </div>
-  </div><!-- /mImportCSV -->
-
-
-  <!-- Modal: Criar Turma -->
-  <div class="modal-bg" id="mTurma">
+  </div><div class="modal-bg" id="mTurma">
     <div class="modal">
       <div class="m-icon m-icon--dark">
         <svg fill="none" stroke="var(--admin)" stroke-width="2" viewBox="0 0 24 24">
@@ -705,11 +649,7 @@
         </div>
       </form>
     </div>
-  </div><!-- /mTurma -->
-
-
-  <!-- Modal: Ver Alunos da Turma -->
-  <div class="modal-bg" id="mVerAlunos">
+  </div><div class="modal-bg" id="mVerAlunos">
     <div class="modal modal--wide">
       <div class="m-icon m-icon--green">
         <svg fill="none" stroke="var(--green)" stroke-width="2" viewBox="0 0 24 24">
@@ -741,27 +681,14 @@
         <button type="button" class="modal-save" onclick="closeM('mVerAlunos')">Fechar</button>
       </div>
     </div>
-  </div><!-- /mVerAlunos -->
-
-
-  <!-- ════════════════════════════════
-       TOAST
-  ════════════════════════════════ -->
-  <div class="toast" id="toast">
+  </div><div class="toast" id="toast">
     <div class="t-dot"></div>
     <span id="toastMsg"></span>
   </div>
 
 
-  <!-- ════════════════════════════════
-       SCRIPTS
-  ════════════════════════════════ -->
-  <!-- Integração com backend existente -->
-  <!-- <script src="config.js"></script> -->
-  <!-- <script src="script.js"></script> -->
-
-  <!-- Lógica do painel admin -->
-  <script src="admin-logic.js"></script>
+  <script src="/js/config.js"></script>
+    <script src="/admin/admin-logic.js"></script>
 
 </body>
 </html>
