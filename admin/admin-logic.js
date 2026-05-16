@@ -160,8 +160,62 @@ async function loadDashboard() {
     toast(`Erro ao carregar dashboard: ${err.message}`, 'err');
   }
 
-  const feed = document.getElementById('activityFeed');
-  if (feed) feed.innerHTML = `<div class="feed-item"><span class="feed-dot dot-blue"></span><span>Sistema carregado.</span></div>`;
+  // Renderiza Feed de Atividade Recente (Corrigido o ID de activityFeed para activityList)
+  const feed = document.getElementById('activityList');
+  if (feed) {
+    feed.innerHTML = `
+      <div class="activity-item">
+        <div class="act-dot" style="background: var(--brand)"></div>
+        <div>
+          <div class="act-text">Sistema sincronizado com sucesso.</div>
+          <div class="act-time">Agora</div>
+        </div>
+      </div>`;
+  }
+}
+
+function updateBarChart() {
+  const chart = document.getElementById('barChart');
+  if (!chart) return;
+
+  if (!state.classes || !state.classes.length) {
+    chart.innerHTML = '<div class="empty"><p>Nenhuma turma cadastrada.</p></div>';
+    return;
+  }
+
+  // Conta os alunos por turma
+  const classCounts = {};
+  state.classes.forEach(c => classCounts[c.id] = { name: c.name, count: 0 });
+
+  if (state.students && state.students.length > 0) {
+    state.students.forEach(s => {
+      if (classCounts[s.class_id]) classCounts[s.class_id].count++;
+    });
+  }
+
+  // Transforma num array, ordena do maior para o menor e pega nas top 5 turmas
+  let chartData = Object.values(classCounts)
+                        .sort((a, b) => b.count - a.count)
+                        .slice(0, 5);
+
+  const maxCount = Math.max(...chartData.map(c => c.count), 1); // Evitar divisão por zero
+
+  // Se todas as turmas têm 0 alunos
+  if (chartData.every(c => c.count === 0)) {
+     chart.innerHTML = '<div class="empty"><p>As turmas ainda não têm alunos matriculados.</p></div>';
+     return;
+  }
+
+  // Gera o HTML do gráfico de barras
+  chart.innerHTML = chartData.map(c => `
+    <div class="bar-row">
+      <div class="bar-label" title="${c.name}">${c.name}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width: ${(c.count / maxCount) * 100}%"></div>
+      </div>
+      <div class="bar-count">${c.count}</div>
+    </div>
+  `).join('');
 }
 
 
@@ -288,6 +342,7 @@ async function loadAlunos() {
   try {
     state.students = await apiGet('/admin/students');
     renderAlunos();
+    updateBarChart(); // Atualiza gráfico sempre que carregar alunos
   } catch (err) {
     toast(`Erro ao carregar alunos: ${err.message}`, 'err');
   }
@@ -465,6 +520,7 @@ async function loadTurmas() {
     state.classes = await apiGet('/admin/classes');
     renderTurmas();
     populateTurmaSelects();
+    updateBarChart(); // Atualiza gráfico sempre que carregar turmas
   } catch (err) {
     toast(`Erro ao carregar turmas: ${err.message}`, 'err');
   }
@@ -595,6 +651,7 @@ function copiarCodigo(code) {
   if (navName) navName.textContent = localStorage.getItem('clivon_user') || 'Admin';
 
   await loadDashboard();
-  await loadTurmas();
-  await Promise.all([loadProfessores(), loadAlunos()]);
+  
+  // O Promise.all carrega tudo e as próprias funções já atualizam o gráfico no final
+  await Promise.all([loadTurmas(), loadProfessores(), loadAlunos()]);
 })();
