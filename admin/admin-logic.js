@@ -120,7 +120,6 @@ function toast(msg, type = '') {
 ════════════════════════════════════════════════════════════ */
 
 function initials(name) {
-  if (!name) return '?';
   return name.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase();
 }
 
@@ -269,7 +268,7 @@ function renderProfs(list, roleFilter = '') {
 function filterProfs(query, role = '') {
   const lower    = query.toLowerCase();
   const filtered = state.teachers.filter((t) =>
-    (t.name ?? '').toLowerCase().includes(lower) || (t.email ?? '').toLowerCase().includes(lower)
+    t.name.toLowerCase().includes(lower) || t.email.toLowerCase().includes(lower)
   );
   renderProfs(filtered, role);
 }
@@ -281,13 +280,11 @@ async function salvarProfessor(event) {
   btn.innerHTML = '<div class="spin"></div> Salvando…';
 
   try {
-    const tokenPayload = JSON.parse(atob(localStorage.getItem('clivon_token').split('.')[1]));
-    await apiPost('/register', {
-      name:      document.getElementById('pNome').value.trim(),
-      email:     document.getElementById('pEmail').value.trim(),
-      password:  document.getElementById('pSenha').value,
-      role:      document.getElementById('pRole').value,
-      school_id: tokenPayload.school_id,
+    await apiPost('/admin/teachers', {
+      name:     document.getElementById('pNome').value.trim(),
+      email:    document.getElementById('pEmail').value.trim(),
+      password: document.getElementById('pSenha').value,
+      role:     document.getElementById('pRole').value,
     });
     toast('Professor cadastrado com sucesso!', 'ok');
     closeM('mProfessor');
@@ -394,7 +391,7 @@ function renderAlunos(list) {
 function filterAlunos(query) {
   const lower    = query.toLowerCase();
   const filtered = state.students.filter((a) =>
-    (a.name ?? '').toLowerCase().includes(lower) || (a.enrollment ?? '').includes(lower)
+    a.name.toLowerCase().includes(lower) || a.enrollment.includes(lower)
   );
   renderAlunos(filtered);
 }
@@ -538,8 +535,8 @@ function renderTurmas(list) {
     <tr>
       <td>
         <div class="td-name">
-          <div class="av ${avColor(i)}" style="border-radius:8px;">${(c.name ?? '??').slice(0, 2)}</div>
-          <span style="font-weight:600;">${c.name ?? '—'}</span>
+          <div class="av ${avColor(i)}" style="border-radius:8px;">${c.name.slice(0, 2)}</div>
+          <span style="font-weight:600;">${c.name}</span>
         </div>
       </td>
       <td style="color:var(--muted);">${c.year ?? '—'}</td>
@@ -568,7 +565,7 @@ function renderTurmas(list) {
 function filterTurmas(query) {
   const lower    = query.toLowerCase();
   const filtered = state.classes.filter((c) =>
-    (c.name ?? '').toLowerCase().includes(lower) || (c.join_code ?? '').toLowerCase().includes(lower)
+    c.name.toLowerCase().includes(lower) || c.join_code.toLowerCase().includes(lower)
   );
   renderTurmas(filtered);
 }
